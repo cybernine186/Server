@@ -1,10 +1,6 @@
 # halas warrior noobie armor quests
 #
 
-
-
-#Producer>Xach@coding
-
 sub EVENT_SAY {
   if ($text=~/hail/i) {
     quest::say("Are you a young warrior here for [training]? If not, I do not have time to chat.");
