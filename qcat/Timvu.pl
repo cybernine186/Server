@@ -4,3 +4,8 @@ sub EVENT_SAY {
 	}
 	#:: Missing response to "circle"
 }
+
+sub EVENT_ITEM {
+	#:: Return unused items
+	plugin::returnUnusedItems();
+}

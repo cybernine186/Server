@@ -1,9 +1,10 @@
-function event_enter_zone(e)
-	local level = e.self:GetLevel();
-	local zoneid = eq.get_zone_id();
-	local qglobals = eq.get_qglobals(e.self);
-
-  	--if(level >= 15 and qglobals.Wayfarer == nil and e.self:GetStartZone() == zoneid) then
-    --		e.self:Message(15, "A mysterious voice whispers to you, 'Drun Vorwig has just joined the Wayfarers Brotherhood and has some information about them, and how you can start doing odd jobs for them. You looked like the heroic sort, so I wanted to contact you . . . discreetly.'");
-  	--end
+function event_pvp_slay(e)
+	if (e.other:GetRace() == 1) then
+		if (e.self:GetID() ~= e.other:GetID()) then
+			e.self:Message(13, "You have slain a Human within Qeynos, the Guards of Qeynos will know of your deeds.");
+			e.self:Faction(291, -100); -- Merchants of Qeynos
+			e.self:Faction(262, -100); -- Guards of Qeynos
+			e.self:Faction(230, -100); -- Corrupt Qeynos Guards
+		end
+	end
 end

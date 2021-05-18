@@ -1,9 +1,9 @@
-function event_enter_zone(e)
-	local level = e.self:GetLevel();
-	local zoneid = eq.get_zone_id();
-	local qglobals = eq.get_qglobals(e.self);
-
-  	--if(level >= 15 and qglobals.Wayfarer == nil and e.self:GetStartZone() == zoneid) then
-    --		e.self:Message(15, "A mysterious voice whispers to you, 'Jowra McGynnall has just joined the Wayfarers Brotherhood and has some information about them, and how you can start doing odd jobs for them. You looked like the heroic sort, so I wanted to contact you . . . discreetly.'");
-  	--end
+function event_pvp_slay(e)
+	if (e.other:GetRace() == 2) then
+		if (e.self:GetID() ~= e.other:GetID()) then
+			e.self:Message(13, "You have slain a Barbarian within Halas, the Wolves of the North will know of your deeds.");
+			e.self:Faction(328, -100); -- Merchants of Halas
+			e.self:Faction(320, -100); -- Wolves of the North
+		end
+	end
 end

@@ -3,5 +3,7 @@ sub EVENT_DEATH_COMPLETE {
   my $y = $npc->GetY();
   my $z = $npc->GetZ();
   my $h = $npc->GetHeading();
-  quest::unique_spawn(51149,0,0,$x,$y,$z,$h); # NPC: corrupted_aquagoblin
+  if (quest::is_the_ruins_of_kunark_enabled()) {
+	quest::unique_spawn(51149,0,0,$x,$y,$z,$h); # NPC: corrupted_aquagoblin
+  }
 }

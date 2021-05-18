@@ -1,4 +1,5 @@
 sub EVENT_SIGNAL {
-  quest::say("Victory is mine!");
-  quest::depop();
+	#:: Signal from steamfont/Cargo_Clockwork.pl
+	quest::say("Victory is mine!");
+	quest::depop();
 }

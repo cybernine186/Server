@@ -3,9 +3,13 @@
 
 sub EVENT_SAY 
 	{ 
-	if($text=~/Hail/i)
+	if($text=~/Hail/i && !defined $qglobals{reaper})
 		{
 		quest::say("What is this I see before me? A would-be hero of the Dead? You reek of false bravado. I have seen others much stronger than you meet their fate at the end of a blade. I see no reason to continue our conversation. How can one such as you assist with my [delegated duties]?");
+		}
+		elsif($text=~/Hail/i && defined $qglobals{reaper})
+		{
+		quest::say("You have already obtained the Reaper of the Dead!")
 		}
 	elsif($text=~/delegated duties/i)
 		{
@@ -71,8 +75,12 @@ sub EVENT_ITEM
 			quest::faction(1522,-50); #Primordial Malice		
 			}
 
-		elsif(plugin::check_handin(\%itemcount, 13390 => 1))#Thex Mallet
-			{
+		elsif (plugin::check_handin(\%itemcount, 13390 => 1))
+		{
+
+			if (!defined $qglobals{reaper}) {
+
+			quest::setglobal(reaper, 1, 0, "F");
 			quest::say("Oh how grand it is!! Look at it!! I feel the power trembling within. Who would have thought such an item would be abandoned? You have performed supremely. Queen Cristanos shall reward me greatly and I shall reward you greatly. Here is my weapon from years past.. the Reaper of the Dead. I believe it has one soul still trapped within.");
 			quest::summonitem(5374);#Reaper of the Dead
 			quest::exp(33750);#1% level 16 exp
@@ -85,6 +93,7 @@ sub EVENT_ITEM
 			quest::faction(245,-15); #Eldritch Collective
 			quest::faction(1522,-200); #Primordial Malice		
 			}
+		}
 
 		elsif(plugin::check_handin(\%itemcount, 18889 => 1))#Letter To Loveal Of The Dead
 			{

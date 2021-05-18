@@ -1,15 +1,3 @@
-function event_spawn(e)
-	local xloc = e.self:GetX();
-	local yloc = e.self:GetY();
-	eq.set_proximity(xloc - 50, xloc + 50, yloc - 50, yloc + 50);
-end
-
-function event_enter(e)
-	if(e.other:HasItem(18733)) then
-		e.other:Message(15,"As your eyes adjust to the interior of your surroundings, you see Mayor Gubbin and Sheriff Roglio standing nearby. The Mayor turns towards Sheriff Roglio. 'Looks like we have another fine young recruit to join your ranks, Roglio!' Sheriff Roglio looks your way. 'Greetings, recruit. Read the note in your inventory and hand it to me when you wish to start your training.'");
-	end
-end
-
 function event_say(e)
 	if(e.message:findi("hail")) then
 		e.self:Say("Hail, " .. e.other:GetName() .. "! Stand tall whenever you are speaking to the Sheriff of Rivervale. I command the warriors of this vale. You must be new to the ranks of the Guardians of the Vale, so be sure to report to your squad at once. We must protect our people. The [danger] has come closer to home. If you are not a deputy, then please leave these halls.");

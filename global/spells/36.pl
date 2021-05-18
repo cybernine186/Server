@@ -26,7 +26,7 @@ sub EVENT_SPELL_EFFECT_CLIENT
 	{
 		if(($client->GetClientVersionBit() & 4294967292)!= 0)
 		{
-			quest::MovePCInstance($bindzone->{$charid},1,$bindx->{$charid},$bindy->{$charid},$bindz->{$charid},$bindh->{$charid});
+			quest::MovePCInstance($bindzone->{$charid},0,$bindx->{$charid},$bindy->{$charid},$bindz->{$charid},$bindh->{$charid});
 		}
 		else 
 		{

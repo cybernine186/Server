@@ -21,26 +21,22 @@ function event_trade(e)
 		e.other:Faction(404, 10); --Truespirit
 		eq.set_global("wizepicK","1",0,"F");
 	elseif(qglobals["wizepicK"] ~= nil) then
-		if(item_lib.check_turn_in(e.trade, {item1 = 14349})) then
-			e.self:Say("Oh wow! You found the oil! Where is the golem? You didn't hurt him did you? I am very fond of him. Anyways, here is your reward a note and staff to give to that guy you were asking me about.");
-			e.other:Ding();
-			e.other:SummonItem(14339); --Staff of Gabstik
-			e.other:SummonItem(18168); --note
-			e.other:Faction(404, 30); --Truespirit
-			eq.delete_global("wizepicK");
-		elseif(item_lib.check_turn_in(e.trade, {item1 = 14333, item2 = 14332})) then
-			e.other:SummonItem(14339); --Staff of Gabstik
-			e.other:SummonItem(14336); --note
-			e.other:Ding();
-			e.self:Say("Great! Give this to Arantir so he knows you've helped me! Hey! Have you seen my lantern anywhere?");
-			eq.delete_global("wizepicK");
-			e.other:Faction(404, 30); --Truespirit
-		elseif(item_lib.check_turn_in(e.trade, {item1 = 14332, item2 = 14332})) then
+		if(item_lib.check_turn_in(e.trade, {item1 = 14332})) then
 			e.self:Say("Great! This is? What is this for again? Oh yeah, the casing for my firework. Here, you can have this then, oh no, wait. You can't yet. I forgot I needed another part to my firework, and you are exactly the person to get it for me! I need some mistletoe powder. Now, go find some for me! Go, go, go, go! Shoo! Oh, wait! Hold on to my bag for me, please. You can give it back after you've given me what I want.");
-			--hack because we do not have this bag in the DB
 			e.other:Ding();
-			e.self:Say("**hack** Hand this skin back in when you turn in the mistletoe powder");
-			e.other:SummonItem(14332); -- Item: Cazic's Skin
+			e.other:SummonItem(14336); --Kandin's bag
+			e.other:Faction(404, 30); --Truespirit
+		elseif(item_lib.check_turn_in(e.trade, {item1 = 14333})) then
+			e.other:SummonItem(14339); --Staff of Gabstik
+			e.other:Ding();
+			e.self:Say("Hand me my bag back and I'll give you something to give to Arantir.");
+			e.other:Faction(404, 30); --Truespirit
+		elseif(item_lib.check_turn_in(e.trade, {item1 = 14336})) then
+			e.other:SummonItem(18168); --note
+			e.self:Say("Great! Give this to Arantir so he knows you've helped me! Hey! Have you seen my lantern anywhere?");
+			e.other:Ding();
+			e.other:Faction(404, 30); --Truespirit
+			eq.delete_global("wizepicK");
 		end
 	end
 	item_lib.return_items(e.self, e.other, e.trade)

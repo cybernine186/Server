@@ -14,6 +14,7 @@ sub EVENT_SPAWN {
   my $range2 = 88;
   quest::set_proximity($x - $range, $x + $range, $y - $range2, $y + $range);
   quest::setnexthpevent(96);
+  quest::gmsay("[$zoneln] Lady Vox has been awakened" . "!", 13, 1, 0, 0); 
 }
 
 sub EVENT_HP {
@@ -40,9 +41,6 @@ sub EVENT_AGGRO {
 
 sub EVENT_TIMER {
   if ($timer == 1) {
-    if($x < -431 || $x > -85 || $y < 770 || $y > 1090 || $z < -50) {
-      WIPE_AGGRO();
-    }
     my @hate_list = $npc->GetHateList();
 	my $hate_count = @hate_list;
 	if ($hate_count > 0) {
@@ -57,9 +55,7 @@ sub EVENT_TIMER {
           }
         }
 	  }
-    } else {
-      WIPE_AGGRO();
-	}
+    }
   }
 }
 
@@ -70,6 +66,10 @@ sub WIPE_AGGRO {
   $npc->GMMove($SpawnX,$SpawnY,$SpawnZ,$SpawnH);
   quest::stoptimer(1);
   quest::setnexthpevent(96);
+}
+
+sub EVENT_DEATH_COMPLETE {
+	quest::gmsay("[$zoneln] Lady Vox has been slain by " . ($entity_list->GetMobByID($killer_id) ? $entity_list->GetMobByID($killer_id)->GetCleanName() : "an unknown hand") . "!", 13, 1, 0, 0);
 }
 
 # EOF zone: permafrost ID: 73057 NPC: Lady_Vox

@@ -1,10 +1,3 @@
-#####################################
-#Quests: Fisherman Convert
-#NPC: Dleria Mausrel, Marlin Bizmite
-#Zone: Qeynos
-#Author: RealityIncarnate
-#####################################
-
 sub EVENT_SAY { 
 	if ($text=~/hail/i) {
 		quest::say("You know.. I took up fishing because it was a nice, quiet activity. Most of all, I took it up to avoid conversing with strangers. Get the picture?!!"); 
@@ -16,10 +9,10 @@ sub EVENT_SAY {
 
 sub EVENT_ITEM {
 	#:: Match a 13544 - Old Blue Tunic*
-  	if (plugin::takeItems(13544 => 1)) {
-    		quest::say("Nice material!! I feel the ways of Prexus enlightening my soul. Unngh!! Enough of this fishing. Here take my broken fishing pole and toss it to the sea. All hail Prexus!!");
+	if (plugin::takeItems(13544 => 1)) {
+		quest::say("Nice material!! I feel the ways of Prexus enlightening my soul. Unngh!! Enough of this fishing. Here take my broken fishing pole and toss it to the sea. All hail Prexus!!");
 		#:: Give a 13922 - Snapped Pole
-		quest::summonitem(13922); # Item: Snapped Pole
+		quest::summonitem(13922);
 		#:: Ding!
 		quest::ding();
 		#:: Set factions
@@ -31,4 +24,8 @@ sub EVENT_ITEM {
 	}
 	#:: Return unused items
 	plugin::returnUnusedItems();
+}
+
+sub EVENT_DEATH_COMPLETE {
+	quest::say("Fear the Deepwater Knights. My brothers shall avenge me.");
 }

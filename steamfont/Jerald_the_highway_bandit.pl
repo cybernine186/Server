@@ -1,4 +1,5 @@
 sub EVENT_SIGNAL {
-  quest::say("I shall eat well tonight!");
-  quest::depop();
+	#:: Signal from steamfont/Cargo_Clockwork.pl
+	quest::say("I shall eat well tonight!");
+	quest::depop();
 }

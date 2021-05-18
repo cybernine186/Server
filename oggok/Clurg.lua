@@ -62,7 +62,7 @@ function event_trade(e)
 			e.other:SummonItem(13378);	-- Ogre Head returned. Not enough faction
 		end
     elseif (item_lib.check_turn_in(e.trade, {item1 = 13379})) then -- Barkeep Compendium
-		if(fac <= 4) then -- Amiable turn in IS required. Indifferent handed book back.
+		if(fac <= 5) then -- Amiable turn in IS required. Indifferent handed book back.
 			e.self:Say("Ahhh! My Barkeep Compendium has been returned! I am in your debt. I do not like to be in any man's debt. Let me offer you this as a payment for your great service. Obtaining my book could not have been a simple task.");
 			e.other:Faction(228,50,0); --Clurg
 			e.other:Faction(274,-50,0); --Kazon Stormhammer

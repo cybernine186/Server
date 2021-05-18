@@ -17,7 +17,7 @@ end
 function event_trade(e)
 	local item_lib = require("items");
 
-	if(item_lib.check_turn_in(e.trade, {item1 = 13761,item2 = 13756,item3 = 13075,item4 = 13749})) then -- Polar Bear Skin, Thick Grizzly Bear Skin, Shark Skin, Alligator Skin
+	if(item_lib.check_turn_in(e.trade, {item1 = 13761,item2 = 9896,item3 = 13075,item4 = 13749})) then -- Polar Bear Skin, Thick Grizzly Bear Skin, Shark Skin, Alligator Skin
 		e.self:Say("Good work, "..e.other:GetName()..". You passed the first test. If you think you are one of us, return this cap to me along with a dagger from a Dark Elf for your true reward.");
 		e.other:SummonItem(13941); -- Leatherfoot Skullcap
 		e.other:Ding();

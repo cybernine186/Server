@@ -3,12 +3,13 @@ function event_say(e)
 	local class = e.other:Class();
 	local level = e.other:GetLevel();
 	
-	if(fac <= 5) then
+	if(fac > -600) then
 		if(e.message:findi("hail")) then
 			e.self:Emote("looks at you suspiciously. 'Yeah? Whacha want?'");
-		elseif(e.message:findi("see stanos") and class == "Rogue" and level >= 50) then
+		elseif(e.message:findi("see stanos") and class == "Rogue" and level > 50) then
 			e.self:Say("This better be important.");
 			eq.spawn2(5088,0,0,336,10,45,450); -- NPC: Stanos_Herkanor
+			eq.depop();
 		end
 	else
 		e.self:Say("Go away! We don't have time for the likes of you.");
@@ -26,7 +27,7 @@ function event_trade(e)
 		e.other:Faction(230,2,0); -- Faction: Corrupt Qeynos Guards
 		e.other:Faction(330,2,0); -- Faction: The Freeport Militia
 		e.other:AddEXP(500);
-		e.other:Message(10,"You receive 35 platinum from Anson McBale.")
+		e.other:Message(15,"You receive 35 platinum from Anson McBale.")
 		e.other:AddMoneyToPP(0, 0, 0, 35, true);
 		eq.spawn2(5088,0,0,336,10,45,450); -- NPC: Stanos_Herkanor
 	end

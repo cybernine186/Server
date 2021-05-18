@@ -1,3 +1,11 @@
+function event_spawn(e)
+	eq.set_timer("depopstanos", 300000);
+end
+
+function event_timer(e)
+	eq.depop();
+end
+
 function event_say(e)
 	local rogue_epic = eq.get_qglobals(e.other);
 	
@@ -81,3 +89,14 @@ end
 function event_signal(e)
 	e.self:Say("I tend to agree Anson. We could make a [" .. eq.say_link("deal") .. "]. I have a blade I won't use anymore, and you have those fine looking daggers Vilnius gave you. Of course, you would have to do something for me first. Let me tell you my [" .. eq.say_link("story") .. "], then you decide.");
 end
+
+function event_combat(e)
+	local StanosFriends ={5019,5038,5107,5056,5055,5050,5051,5037};
+	if(e.joined) then
+		e.self:Shout("I will kill you and your lickspittle friends for this!");
+		for i = 1, 8 do
+			eq.signal(StanosFriends[i],1);
+		end
+	end
+end
+

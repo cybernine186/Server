@@ -1,9 +1,9 @@
-function event_enter_zone(e)
-	local level = e.self:GetLevel();
-	local zoneid = eq.get_zone_id();
-	local qglobals = eq.get_qglobals(e.self);
-
-  	--if(level >= 15 and qglobals.Wayfarer == nil and e.self:GetStartZone() == zoneid) then
-    --		e.self:Message(15, "A mysterious voice whispers to you, 'Orwin Flintmaker has just joined the Wayfarers Brotherhood and has some information about them, and how you can start doing odd jobs for them. You looked like the heroic sort, so I wanted to contact you . . . discreetly.'");
-  --	end
+function event_pvp_slay(e)
+	if (e.other:GetRace() == 3) then
+		if (e.self:GetID() ~= e.other:GetID()) then
+			e.self:Message(13, "You have slain an Erudite within Erudin, the Emerald Warriors will know of your deeds.");
+			e.self:Faction(289, -100); -- Merchants of Erudin
+			e.self:Faction(267, -100); -- High Guard of Erudin
+		end
+	end
 end

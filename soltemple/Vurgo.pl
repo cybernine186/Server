@@ -16,11 +16,20 @@ quest::say("The first thing that I need is a shadowed book from our mortal enemi
 }
 }
 sub EVENT_ITEM {
-	if($itemcount{10538} == 1 && $itemcount{10031} == 1 && $itemcount{7331} == 1 && $itemcount{5103} == 1) { # A Fungus Eye, Fire Opal, Shadowed Knife, Shadowed Scythe
+	if($itemcount{10538} == 1 && $itemcount{10031} == 1 && $itemcount{7331} == 1 && $itemcount{37635} == 1) { # A Fungus Eye, Fire Opal, Shadowed Knife, A note
 		quest::summonitem("5316"); # Harvester
+		quest::say("My note, a fungus eye, a shadowed knife and gold! All of the necessary components to make a harvester. Well done, adventurer!");
+		quest::faction("5029","100");
+		quest::faction("416","-100");
 	} elsif($itemcount{10536} == 1 && $itemcount{10537} == 1 && $itemcount{10529} == 1) { # Book of Darkness, Book of Frost, Shadowed Book
 		quest::summonitem("10527"); # Words of Darkness
-	} else {
+	} elsif($itemcount{5103} == 1) { #A shadowed scythe
+		quest::summonitem("37635"); #A note
+		quest::say("A Shadowed Scythe - well done. The only good Shadowed Man is a banished one. As the weapons of the Shadowed Man have a tendency to disappears, I have given you a note to remind me that you have indeed supplied me with a Scythe. Give me the note with the following items and I will forge you a Harvester: A Fungus Eye from a Mortuary Fungus in the Estate of Unrest, A Shadowed Knife from an Island Goblin Headmaster in the Ocean of Tears and fire opal. Give me these items, and I will forge for you a Harvester.");
+		quest::faction("5029","100");
+		quest::faction("416","-100");
+	}
+	 else {
 		quest::say("I don't need this.");
 		if($item1 > 0){quest::summonitem("$item1");} 
 		if($item2 > 0){quest::summonitem("$item2");} 

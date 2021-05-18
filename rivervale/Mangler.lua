@@ -4,5 +4,4 @@ end
 
 function event_timer(e)
 	e.self:Say("<Bark, bark, bark! Hoooooowwwwwwl!>");
-	eq.signal(19049,1); -- NPC: Kevlin_Diggs Armor
 end

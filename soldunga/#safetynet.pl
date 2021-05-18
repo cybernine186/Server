@@ -7,5 +7,5 @@ sub EVENT_SPAWN
 
 sub EVENT_ENTER
 {
-   quest::movepc(31,-485,-476,73); # Zone: soldunga
+   quest::movepc(31,-485,-476,73);
 } 
