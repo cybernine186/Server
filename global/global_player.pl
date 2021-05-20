@@ -19,8 +19,12 @@ sub EVENT_DEATH_COMPLETE  {
 		$guildid = quest::getguildidbycharid($charid);
 		$guildname = quest::getguildnamebyid($guildid);
 
-		quest::gmsay("[PVP] $name of <$guildslain> has been killed by $killer_name of <$guildname> in $zoneln!", 315, 1, 0, 0); 
+		#quest::gmsay("[PVP] $name of <$guildslain> has been killed by $killer_name of <$guildname> in $zoneln!", 315, 1, 0, 0); 
+		
+		quest::we(315,"[PVP] $name of <$guildslain> has been killed by $killer_name of <$guildname> in $zoneln!"); 
+		#Lets use world emote instead of GM say to see if it picks up on Discord EQ bot
 		return;
+		
 	}
 	
 	if ($entity_list->GetMobByID($killer_id)->IsClient()) {
@@ -28,8 +32,13 @@ sub EVENT_DEATH_COMPLETE  {
 		$guildid = quest::getguildidbycharid($characteridbymob);
 		$guildname = quest::getguildnamebyid($guildid);
 		
-		quest::gmsay("[PVP] $name of <$guildslain> has been killed by " . ($entity_list->GetMobByID($killer_id) ? $entity_list->GetMobByID($killer_id)->GetCleanName() : "an unknown hand") . " of <$guildname> in $zoneln!", 315, 1, 0, 0);
+		#quest::gmsay("[PVP] $name of <$guildslain> has been killed by " . ($entity_list->GetMobByID($killer_id) ? $entity_list->GetMobByID($killer_id)->GetCleanName() : "an unknown hand") . " of <$guildname> in $zoneln!", 315, 1, 0, 0);
+
+		quest::we(315,"[PVP] $name of <$guildslain> has been killed by  " . ($entity_list->GetMobByID($killer_id) ? $entity_list->GetMobByID($killer_id)->GetCleanName() : "an unknown hand") . " of <$guildname> in $zoneln!"); 
+		#Lets use world emote instead of GM say to see if it picks up on Discord EQ bot
 		return;
+		
+		
 	}
 	
 	if ($entity_list->GetMobByID($killer_id)->IsPet()) {
@@ -38,8 +47,12 @@ sub EVENT_DEATH_COMPLETE  {
 		$guildid = quest::getguildidbycharid($characteridbymob);
 		$guildname = quest::getguildnamebyid($guildid);
 
-		quest::gmsay("[PVP] $name of <$guildslain> has been killed by " . ($entity_list->GetMobByID($petowner) ? $entity_list->GetMobByID($petowner)->GetCleanName() : "an unknown hand") . " of <$guildname> in $zoneln!", 315, 1, 0, 0);
+		#uest::gmsay("[PVP] $name of <$guildslain> has been killed by " . ($entity_list->GetMobByID($petowner) ? $entity_list->GetMobByID($petowner)->GetCleanName() : "an unknown hand") . " of <$guildname> in $zoneln!", 315, 1, 0, 0);
+		quest::we(315,"[PVP] $name of <$guildslain> has been killed by  " . ($entity_list->GetMobByID($petowner) ? $entity_list->GetMobByID($petowner)->GetCleanName() : "an unknown hand") . " of <$guildname> in $zoneln!"); 
+
+		
 		return; 
+		
 	}
 }
 
