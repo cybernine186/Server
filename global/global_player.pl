@@ -98,7 +98,6 @@ sub EVENT_ENTERZONE {
 	}
 }
 
-
 sub EVENT_LEVEL_UP {
 	$levelcheck = $client->GetLevel();
 	$classcheck = $client->GetClass();
