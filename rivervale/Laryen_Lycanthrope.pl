@@ -10,7 +10,7 @@ if($clientver > 2){
 			if(quest::istaskactivityactive(213,1)){
 				quest::emote("seems disappointed at the instability of his cure, and shrugs a bit before fishing out your reward.");
 				quest::summonitem(87318,5); # Item: Gummy Bear Delight
-				$client->AddLevelBasedExp(10, 0);
+				$client->AddLevelBasedExp(10, 1);
 				quest::setglobal("halloween_cure",1,0,"H3");
 				quest::updatetaskactivity(213,1);
 			}

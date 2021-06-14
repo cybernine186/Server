@@ -92,12 +92,7 @@ sub EVENT_DISCOVER_ITEM {
 }
 
 sub EVENT_ENTERZONE {
-	if ($status < 255) {
-		$client->SetGM(0);
-	}
-	else {
-		
-	}
+
 	
 	#:: Figure out if the player has a pet and blow it up when they leave a zone
 	if ($client->GetPetID()) {
