@@ -4,7 +4,11 @@ sub EVENT_COMBAT {
 		#:: Create a scalar variable to store a random number
 		my $RandomNumber = quest::ChooseRandom(1, 2);
 		if ($RandomNumber == 1) {
-			quest::say("Time to die $name!");
+			my $cur_target = $npc->GetHateTop();
+			if($cur_target) {
+			my $target_name = $cur_target->GetCleanName();
+			quest::say("Time to die $target_name!");
+			}
 		}
 		else {
 			quest::say("Heathen! Unbeliever! Norrath must be cleansed!");

@@ -76,12 +76,6 @@ sub EVENT_DEATH_COMPLETE  {
 }
 
 sub EVENT_ZONE {
-	if ($status < 255) {
-		$client->SetGM(0);
-	}
-	else {
-		
-	}
 	#:: Figure out if the player has a pet and blow it up when they leave a zone
 	if ($client->GetPetID()) {
 		$PetID = $entity_list->GetMobByID($client->GetPetID());
@@ -92,17 +86,6 @@ sub EVENT_ZONE {
 		$PetID->Depop();
 		}
 	}
-}
-
-sub EVENT_CONNECT {
-	
-	if ($status < 255) {
-		$client->SetGM(0);
-	}
-	else {
-		
-	}	
-		
 }
 
 

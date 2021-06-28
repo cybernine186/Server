@@ -3,31 +3,7 @@ sub EVENT_SPAWN {
 	quest::settimer("Beware", 600);
 	#:: Create a timer 'SpawnCondition' that triggers every 5 seconds
 	quest::settimer("SpawnCondition", 5);
-	quest::gmsay("[$zoneln] Cazic-Thule has been awakened" . "!", 13, 1, 0, 0); 
 }
-
-sub EVENT_SAY {
-	#if ($text=~/gandan has failed in his task/i) {
-	#	quest::emote("'s thoughts begin to pervade your own, they creep into your mind with great force. You feel pressure as if your head will explode. You see his thoughts becoming your own. You see in these visions a tome bound in flesh dropped to the ground. You then open your eyes to see that same book, and take it knowing that it was meant for you.");
-		#:: Give a 18898 - Flayed Skin Tome
-		#quest::summonitem(18898);
-	#}
-}
-
-##sub EVENT_ITEM {
-	#:: Match a 8226 - Satchel of Cazic-Thule, a 18898 - Flayed Skin Tome, and a 18899 - Flayed Skin Tome
-	##if (plugin::takeItems(8226 => 1, 18898 => 1, 18899 => 1)){
-	##	quest::emote("seems pleased with the amount of pain that you have been able to inflict. Cazic Thule then grabs your hands and begins to infuse them with his power. Your hands burn like they were placed in lava for a moment, then feel cool as ice. You can feel the sheer power flowing through your new weapons of pain.");
-		#:: Give a 7836 - Whistling Fists
-	##	quest::summonitem(7836);
-		#:: Ding!
-	#	quest::ding();
-		#:: Grant a huge amount of experience
-	#	quest::exp(100000);
-	#}
-	#:: Return unused items
-	#plugin::returnUnusedItems();
-#}
 
 sub EVENT_TIMER {
 	#:: Match timer 'SpawnCondition'
@@ -159,5 +135,22 @@ sub EVENT_DEATH_COMPLETE {
 	quest::signalwith(72000, 3, 0);		#:: Dread
 	quest::signalwith(72004, 3, 0);		#:: Fright
 	quest::signalwith(72002, 3, 0);		#:: Terror
-	quest::gmsay("[$zoneln] Cazic-Thule has been slain by " . ($entity_list->GetMobByID($killer_id) ? $entity_list->GetMobByID($killer_id)->GetCleanName() : "an unknown hand") . ".", 13, 1, 0, 0); 
+	if ($entity_list->GetMobByID($killer_id)->IsClient()) {
+		$characteridbymob = $entity_list->GetClientByID($killer_id)->CharacterID();
+		$guildid = quest::getguildidbycharid($characteridbymob);
+		$guildname = quest::getguildnamebyid($guildid);
+		
+		quest::gmsay("[$zoneln] Congratulations to <$guildname>'s member, " . ($entity_list->GetMobByID($killer_id) ? $entity_list->GetMobByID($killer_id)->GetCleanName() : "an unknown hand") . " for being the first to slay Cazic Thule!", 13, 1, 0, 0);
+		return;
+	}
+
+	if ($entity_list->GetMobByID($killer_id)->IsPet()) {
+		$petowner = $entity_list->GetMobByID($killer_id)->GetOwnerID();
+		$characteridbymob = $entity_list->GetClientByID($petowner)->CharacterID();
+		$guildid = quest::getguildidbycharid($characteridbymob);
+		$guildname = quest::getguildnamebyid($guildid);
+
+		quest::gmsay("[$zoneln] Congratulations to <$guildname>'s member, " . ($entity_list->GetMobByID($petowner) ? $entity_list->GetMobByID($petowner)->GetCleanName() : "an unknown hand") . " for being the first to slay Cazic Thule!", 13, 1, 0, 0);
+		return; 
+	}
 }

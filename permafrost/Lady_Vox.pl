@@ -14,7 +14,6 @@ sub EVENT_SPAWN {
   my $range2 = 88;
   quest::set_proximity($x - $range, $x + $range, $y - $range2, $y + $range);
   quest::setnexthpevent(96);
-  quest::gmsay("[$zoneln] Lady Vox has been awakened" . "!", 13, 1, 0, 0); 
 }
 
 sub EVENT_HP {
@@ -69,7 +68,24 @@ sub WIPE_AGGRO {
 }
 
 sub EVENT_DEATH_COMPLETE {
-	quest::gmsay("[$zoneln] Lady Vox has been slain by " . ($entity_list->GetMobByID($killer_id) ? $entity_list->GetMobByID($killer_id)->GetCleanName() : "an unknown hand") . "!", 13, 1, 0, 0);
+	if ($entity_list->GetMobByID($killer_id)->IsClient()) {
+		$characteridbymob = $entity_list->GetClientByID($killer_id)->CharacterID();
+		$guildid = quest::getguildidbycharid($characteridbymob);
+		$guildname = quest::getguildnamebyid($guildid);
+		
+		quest::gmsay("[$zoneln] Congratulations to <$guildname>'s member, " . ($entity_list->GetMobByID($killer_id) ? $entity_list->GetMobByID($killer_id)->GetCleanName() : "an unknown hand") . " for being the first to slay Lady Vox!", 13, 1, 0, 0);
+		return;
+	}
+
+	if ($entity_list->GetMobByID($killer_id)->IsPet()) {
+		$petowner = $entity_list->GetMobByID($killer_id)->GetOwnerID();
+		$characteridbymob = $entity_list->GetClientByID($petowner)->CharacterID();
+		$guildid = quest::getguildidbycharid($characteridbymob);
+		$guildname = quest::getguildnamebyid($guildid);
+
+		quest::gmsay("[$zoneln] Congratulations to <$guildname>'s member, " . ($entity_list->GetMobByID($petowner) ? $entity_list->GetMobByID($petowner)->GetCleanName() : "an unknown hand") . " for being the first to slay Lady Vox!", 13, 1, 0, 0);
+		return; 
+	}
 }
 
 # EOF zone: permafrost ID: 73057 NPC: Lady_Vox

@@ -1,7 +1,6 @@
 sub EVENT_SPAWN {
 	#:: Create a proximity 400 units across, without proximity say
 	quest::set_proximity($x - 200, $x + 200, $y - 200, $y + 200, $z - 200, $z + 200, 0);
-	quest::gmsay("[$zoneln] Lord Nagafen has been awakened" . "!", 13, 1, 0, 0); 
 }
 
 sub EVENT_ENTER {
@@ -30,7 +29,7 @@ sub EVENT_DEATH_COMPLETE {
 		$guildid = quest::getguildidbycharid($characteridbymob);
 		$guildname = quest::getguildnamebyid($guildid);
 
-		quest::gmsay("[$zoneln] Lord Nagafen has been slain by " . ($entity_list->GetMobByID($petowner) ? $entity_list->GetMobByID($petowner)->GetCleanName() : "an unknown hand") . " of <$guildname>", 13, 1, 0, 0);
+		quest::gmsay("[$zoneln] Congratulations to <$guildname>'s member, " . ($entity_list->GetMobByID($petowner) ? $entity_list->GetMobByID($petowner)->GetCleanName() : "an unknown hand") . " for being the first to slay Lord Nagafen!", 13, 1, 0, 0);
 		return; 
 	}
 }
