@@ -29,7 +29,9 @@ function event_trade(e)
 			e.other:Faction(262,2,0); -- Guards of Qeynos
 			e.other:Faction(221,-1,0); -- Bloodsabers
 			e.other:Faction(280,1,0); -- Knights of Thunder
-			e.other:Faction(341,5,0); -- Priests of Life
+			e.other:Faction(341,5,0); -- Priests of 
+			e.other:AddEXP(22000);
+			e.other:GiveCash(0,8,0,0);
 		else
 			e.self:Say("The Temple of Life smiles upon you, friend.. but such a delicate matter can only be entrusted to our most loyal members.");
 			e.other:SummonItem(13949); -- Item: Diseased Wolf Pelt
@@ -45,6 +47,8 @@ function event_trade(e)
 			e.other:Faction(221,-1,0); -- Bloodsabers
 			e.other:Faction(280,1,0); -- Knights of Thunder
 			e.other:Faction(341,5,0); -- Priests of Life
+			e.other:AddEXP(26000);
+			e.other:GiveCash(0,12,0,0);
 		else
 			e.self:Say("The Temple of Life smiles upon you, friend.. but such a delicate matter can only be entrusted to our most loyal members.");
 			e.other:SummonItem(13298); -- Item: Putrid Bear Hide
@@ -59,8 +63,8 @@ function event_trade(e)
 			e.other:Faction(221,-1,0); -- Bloodsabers
 			e.other:Faction(280,1,0); -- Knights of Thunder
 			e.other:Faction(341,5,0); -- Priests of Life
-			e.other:AddEXP(500);
-			e.other:GiveCash(0,0,6,0);
+			e.other:AddEXP(15000);
+			e.other:GiveCash(0,12,5,0);
 		else
 			e.self:Say("The Temple of Life smiles upon you, friend.. but such a delicate matter can only be entrusted to our most loyal members.");
 			e.other:SummonItem(13951); -- Item: Fleshy Orb

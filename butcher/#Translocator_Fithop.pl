@@ -1,5 +1,14 @@
 ##Translocator_Fithop.pl
 #Zone: butcher
+sub EVENT_SPAWN{
+	quest::settimer("depop",120); ##Despawn after 2 minutes
+	quest::shout("The boat to the Ocean of Tears has arrived, please board quickly!");
+}
+  
+sub EVENT_TIMER{
+	quest::stoptimer("depop");
+	quest::depop_withtimer();
+}
 
 sub EVENT_SAY{
   if ($text=~/Hail/i){

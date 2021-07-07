@@ -69,7 +69,7 @@ sub EVENT_ITEM {
     quest::faction(293,10); # Faction: Miners Guild 249
     quest::faction(290,10); # Faction: Merchants of Kaladim
     quest::faction(232,-30); # Faction: Craknek Warriors
-    quest::exp(18400);
+    quest::exp(9200);
   }
   elsif (plugin::check_handin(\%itemcount, 13319 => 4)) { #Crushbone Shoulderpads x 4
     quest::say("Aha!! You have downed a Crushbone legionnaire!! You have shown yourself to be a strong warrior. Take this. This is more becoming of a great warrior such as yourself. Let no creature stand in the way of the Stormguard!");
