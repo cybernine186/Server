@@ -24,5 +24,4 @@ sub EVENT_DEATH {
 		#:: Spawn a The Plane of Fear >> Iksar_broodling (72105) at the current location
 		quest::spawn2(72105, 0, 0, $x, $y, $z, $h);
 	}
-	quest::gmsay("[$zoneln] Dread has been slain by " . ($entity_list->GetMobByID($killer_id) ? $entity_list->GetMobByID($killer_id)->GetCleanName() : "an unknown hand") . ".", 13, 1, 0, 0); 
 }
