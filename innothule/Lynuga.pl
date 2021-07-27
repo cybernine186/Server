@@ -14,16 +14,24 @@ sub EVENT_ITEM {
 	#:: Match a 10035 - Ruby
 	if (plugin::takeItems(10035 => 1)) {
 		quest::say("Mmm. Ruby!! Me thank's you! Here take this, me got it off dead someone who try take my collection. Me think's this valuable thing..");
-		#:: Give a random reward: 10080 - Brutechopper, 10081 - Midnight Mallet, 10082 - Ivandyr's Hoop
-		quest::summonitem(quest::ChooseRandom(10080, 10081, 10082));
-		#:: Ding!
-		quest::ding();
-		quest::faction(222, 5);			#:: + Broken Skull Clan
-		quest::faction(308, -5);		#:: - Shadowknights of Night Keep
-		quest::faction(235, -5);		#:: - DaBashers
-		#:: Grant a small amount of experience
-		quest::exp(500);
-	}
+    # 10% chance for Ivandyr's Hoop, 30% chance for Midnight Mallet, 60% for Brutechopper 
+    my $roll_d10 = int(rand(10));
+    if ($roll_d10 == 0){
+      quest::summonitem(10082); # 10082 - Ivandyr's Hoop
+    } elsif ($roll_d10 == 1 || $roll_d10 == 2 || $roll_d10 == 3) {
+      quest::summonitem(10081); # 10081 - Midnight Mallet
+    } else {
+      quest::summonitem(10080); # 10080 - Brutechopper
+    }
+	#:: Ding!
+	quest::ding();
+    quest::faction(222, 5);			#:: + Broken Skull Clan
+	quest::faction(308, -5);		#:: - Shadowknights of Night Keep
+	quest::faction(235, -5);		#:: - DaBashers
+	#:: Grant a small amount of experience
+	quest::exp(500);
+	
+    }
 	#:: Return unused items
 	plugin::returnUnusedItems();
 }
