@@ -27,8 +27,8 @@ sub EVENT_ITEM {
 	#:: Match 18797 - Tattered Note, 18798 - Tattered Note, 1347 - Warthread Kilt
 	if (plugin::check_handin(\%itemcount, 18797 => 1, 18798 => 1, 1347 => 1)) {
 		quest::say("Ah, Wulfthan, you are at last avenged. Thank you, $name please take this kilt as a reward for services well done.");
-		#:: Give a 18798 - Tattered Note
-		quest::summonitem(18798);
+		#:: Give a 2365 - Tishan's Kilt
+		quest::summonitem(2365);
 		quest::ding();
 		quest::exp(1500);
 	}
@@ -36,3 +36,4 @@ sub EVENT_ITEM {
 	plugin::return_items(\%itemcount);
 }
 # Converted to Perl by SS
+# Fixed reward 7/27/2021 - Kefitzat
