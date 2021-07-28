@@ -43,7 +43,7 @@ sub EVENT_ITEM {
 			#:: Grant a random cash reward
 			quest::givecash($cash{copper},$cash{silver},$cash{gold},$cash{platinum});
 		}
-		elsif ($RandomChance == 9) {
+		elsif (($RandomChance == 8) || ($RandomChance == 7) || ($RandomChance == 9)) {
 			#:: Give a 13385 - Ogre Meat Cleaver
 			quest::summonitem(13385); # Item: Ogre Meat Cleaver
 			#:: Ding!
@@ -57,21 +57,9 @@ sub EVENT_ITEM {
 			#:: Grant a random cash reward
 			quest::givecash($cash{copper},$cash{silver},$cash{gold},$cash{platinum});
 		}
-		elsif (($RandomChance == 8) || ($RandomChance == 7)) {
+		elsif ($RandomChance <= 6) {
 			#:: Give a 10021 - Star Rose Quartz
 			quest::summonitem(10021); # Item: Star Rose Quartz
-			#:: Ding!
-			quest::ding();
-			#:: Set faction
-			quest::faction(353, 5);		#:: + Neriak Ogre
-			#:: Grant a small amount of experience
-			quest::exp(150);
-			#:: Create a hash for storing cash - 100 to 350cp
-			my %cash = plugin::RandomCash(100,350);
-			#:: Grant a random cash reward
-			quest::givecash($cash{copper},$cash{silver},$cash{gold},$cash{platinum});
-		}
-		elsif ($RandomChance <= 6) {
 			#:: Ding!
 			quest::ding();
 			#:: Set faction

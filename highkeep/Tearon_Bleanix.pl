@@ -44,7 +44,7 @@ sub EVENT_SAY {
 			#:: Ding!
 			quest::ding();
 			#:: Spawn one and only one Princess_Lenya_Thex (51176)
-			#quest::unique_spawn(51176, 0, 0, -202, 85, 74, 400); - Removed the spawn... If not, can exploit this by chain spawning for quest turn in XP. - Darksinga 3/4/21
+			quest::unique_spawn(51176, 0, 0, -202, 85, 74, 400); ## Removed the spawn... If not, can exploit this by chain spawning for quest turn in XP. - Darksinga 3/4/21
 		}
 		else {
 			quest::say("When you have furthered your service to the Paladins of Tunare, we shall make conversation.");
@@ -79,7 +79,7 @@ sub EVENT_ITEM {
 			#:: Grant a small amount of experience
 			quest::exp(100);
 			#:: Spawn one and only one Princess_Lenya_Thex (51176), without guild war or pathgrid, at the specified location
-			quest::unique_spawn(51176, 0, 0, 51, 2, 2.5, 501);
+			quest::unique_spawn(51176, 0, 0, 52, 9, 2.5, 252);
 		}
 		else {
 			quest::say("When you have furthered your service to the Paladins of Tunare, we shall make conversation.");

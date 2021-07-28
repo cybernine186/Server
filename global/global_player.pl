@@ -5,6 +5,7 @@ sub EVENT_DEATH_COMPLETE  {
 		201 => Evil,
 		203 => Evil,
 		206 => Evil,
+		211 => Evil,
 		202 => Neutral,
 		205 => Neutral,
 		207 => Neutral,
@@ -35,8 +36,6 @@ sub EVENT_DEATH_COMPLETE  {
 
 		$guildid = quest::getguildidbycharid($charid);
 		$guildname = quest::getguildnamebyid($guildid);
-
-		#quest::gmsay("[PVP] $name of <$guildslain> has been killed by $killer_name of <$guildname> in $zoneln!", 315, 1, 0, 0); 
 		
 		quest::we(315,"[PVP] $name of <$guildslain> has been killed by $killer_name of <$guildname> in $zoneln!"); 
 		#Lets use world emote instead of GM say to see if it picks up on Discord EQ bot
@@ -66,7 +65,6 @@ sub EVENT_DEATH_COMPLETE  {
 		$killerdeitycheck = $entity_list->GetMobByID($petowner)->GetDeity();
 		$killeddeitycheck = $client->GetDeity();
 
-
 		quest::gmsay("[PVP] $name <$guildslain> of the $team{$killeddeitycheck} team has been killed by " . ($entity_list->GetMobByID($petowner) ? $entity_list->GetMobByID($petowner)->GetCleanName() : "an unknown hand") . " <$guildname> of the $team{$killerdeitycheck} team in $zoneln!", 315, 1, 0, 0);
 
 		
@@ -94,8 +92,20 @@ sub EVENT_DISCOVER_ITEM {
 }
 
 sub EVENT_ENTERZONE {
+	#:: Figure out if the player has a pet and blow it up when they leave a zone
+	if ($client->GetPetID()) {
+		$PetID = $entity_list->GetMobByID($client->GetPetID());
+		if ($PetID->Charmed()){
+			
+		}
+		else {
+		$PetID->Depop();
+		}
+	}
+}
 
-	
+sub EVENT_CONNECT {
+	plugin::HandleOnlineList($client);  
 	#:: Figure out if the player has a pet and blow it up when they leave a zone
 	if ($client->GetPetID()) {
 		$PetID = $entity_list->GetMobByID($client->GetPetID());

@@ -3,5 +3,5 @@ sub EVENT_SPAWN {
 }
 
 sub EVENT_ENTER {
-	$client->MovePC(44, -413, -265, -112, 32);
+	$client->MovePC(44, -413, -265, -112, 385);
 }

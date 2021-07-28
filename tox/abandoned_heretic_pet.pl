@@ -5,6 +5,7 @@ sub EVENT_ITEM {
 		#:: Give a random reward: 10015 - Malachite, 10016 - Lapis Lazuli, 10017 - Turquoise, 10018 - Hematite
 		quest::summonitem(quest::ChooseRandom(10015, 10016, 10017, 10018));
 		#:: Ding!
+		quest::exp(3500);
 		quest::ding();
 	}
 	#:: Return unused items
