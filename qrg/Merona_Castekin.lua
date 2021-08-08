@@ -16,8 +16,7 @@ function event_trade(e)
 		e.other:Faction(272,10,0); -- Faction: Jaggedpine Treefolk
 		e.other:Faction(306,-30,0); -- Faction: Sabertooths of Blackburrow
 		e.other:Faction(262,10,0); -- Faction: Guards of Qeynos
-		e.other:AddEXP(1000);
-		e.other:GiveCash(math.random(10),math.random(10),math.random(10),math.random(10));
+		e.other:AddEXP(3000);
 	end
 	item_lib.return_items(e.self, e.other, e.trade);
 end

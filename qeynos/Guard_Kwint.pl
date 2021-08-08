@@ -27,7 +27,7 @@ sub EVENT_ITEM {
 		quest::faction(223, -1);	#:: - Circle of Unseen Hands
 		quest::faction(291, 1);		#:: + Merchants of Qeynos
 		#:: Grant a moderate amount of experience
-		quest::exp(8000);
+		quest::exp(3500);
 		#:: Create a hash for storing cash - 1 to 10cp
 		my %cash = plugin::RandomCash(1,10);
 		#:: Grant a random cash reward

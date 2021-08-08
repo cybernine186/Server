@@ -37,7 +37,7 @@ function event_trade(e)
 		e.other:Faction(262,1,0); -- Faction: Guards of Qeynos
 		e.other:Faction(341,1,0); -- Faction: Priests of Life
 		e.other:Faction(280,1,0); -- Faction: Knights of Thunder
-		e.other:GiveCash(0,0,3,9);
+		e.other:GiveCash(3,9,0,0);
 	elseif(item_lib.check_turn_in(e.trade, {item1 = 10070,item2 = 10070,item3 = 10070,item4 = 10070})) then
 		moonstone = 4;
 	elseif(item_lib.check_turn_in(e.trade, {item1 = 10070,item2 = 10070,item3 = 10070})) then

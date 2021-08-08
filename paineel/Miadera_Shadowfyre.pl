@@ -19,7 +19,7 @@ sub EVENT_ITEM {
     quest::say("Yes, this is what I require to summon Terror!"); #Text made up
     quest::emote("begins speaking an incantation. 'Take this mask as your reward for helping me.'");
     quest::summonitem(14106); #Mundane Mask
-#    quest::spawn2(?????); #Avatar of Terror
+    quest::spawn2(48240, 0, 0, 419, 1163, -36, 134); #Avatar of Terror
   }
   plugin::returnitems(\%itemcount);
 }

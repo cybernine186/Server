@@ -73,7 +73,7 @@ sub EVENT_ITEM {
 		quest::faction(229, 2);			#:: + Coalition of Tradefolk
 		quest::faction(262, 5);			#:: + Guards of Qeynos
 		#:: Grant a moderate amount of experience
-		quest::exp(8000);
+		quest::exp(150);
 		#:: Set item count to 1
 		$ItemCount = 1;
 	}
