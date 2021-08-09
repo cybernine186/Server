@@ -5,7 +5,11 @@ function event_combat(e)
 end
 
 function event_say(e)
-	if(e.message:findi("")) then
-		e.self:Say(string.format("Hail, %s.  If you are not busy, we can always use help keeping the beetle population under control in front of the gates.  But be careful, we have had sightings of a large queen beetle out there.",e.other:GetName()));
+	if(e.message:findi("hail")) then
+		e.self:Say(string.format("Hail, %s.  If you are not busy, we can always use help keeping the beetle population under control in front of the gates. But be careful, we have had sightings of a large queen beetle out there.",e.other:GetName()));
 	end
+end
+
+function event_death(e)
+    e.self:Say(string.format("My comrades will avenge my death."));
 end

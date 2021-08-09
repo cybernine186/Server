@@ -1,6 +1,6 @@
 function event_say(e)
 	if(e.message:findi("hail")) then
-		e.self:Say(string.format("Greetings. %s. I am Jaylia the Faithful. daughter of Raiston and Launa Lightmist.  I was born in Qeynos while it was under the rule of Antonius Bayle III.  My parents were both paladins of [Rodcet Nife] and protectors of the city.  They saw to it that I learned the ways of the [Holy Knights].",e.other:GetName()));
+		e.self:Say(string.format("Greetings. %s. I am Jaylia the Faithful. daughter of Raiston and Launa Lightmist. I was born in Qeynos while it was under the rule of Antonius Bayle III.  My parents were both paladins of [Rodcet Nife] and protectors of the city. They saw to it that I learned the ways of the [Holy Knights].",e.other:GetName()));
 	elseif(e.message:findi("holy knights")) then
 		e.self:Say("My parents provided me with a vast amount of knowledge.  I was taught the ways of the Holy Knights at the Temple of Thunder and the Temple of Life.  After the death of my father. I was sent to [Freeport] to study the holy ways of the Knights of Truth.");
 	elseif(e.message:findi("freeport")) then
@@ -22,4 +22,9 @@ function event_say(e)
 	elseif(e.message:findi("end")) then
 		e.self:Say("I stood silently with my arms to my sides and looked out across the plains.  I raised my hands into the air once more and simply said. 'I am ready now.'  I then fell to the ground and was raised to the Realm of Heroes. newly christened 'Jaylia the Faithful.'");
 	end
+end
+
+function event_trade(e)
+	local item_lib = require("items");
+	item_lib.return_items(e.self, e.other, e.trade);
 end

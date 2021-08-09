@@ -6,6 +6,10 @@ end
 
 function event_say(e)
 	if(e.message:findi("hail")) then
-		e.self:Say(string.format("Heh?  %s. huh?  What do you want?  Can't you see I am a busy man. guarding and protecting you weaklings..  er.. citizens?  You better just move along before something happens to you!",e.other:GetName()));
+		e.self:Say(string.format("Heh? %s. Huh? What do you want? Can't you see I am a busy man guarding and protecting you weaklings...  er... citizens? You better just move along before something happens to you!",e.other:GetName()));
 	end
+end
+
+function event_death(e)
+    e.self:Say(string.format("My comrades will avenge my death."));
 end

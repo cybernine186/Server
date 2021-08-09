@@ -1,7 +1,5 @@
 function event_say(e)
-
 	local tax = eq.get_qglobals(e.other);
-	
 	if(e.message:findi("hail")) then
 		e.self:Say(string.format("Greetings, %s! Nesiff Tallaherd, owner and operator of Nesiff's Wooden Weapons, at your service. I am the finest woodworker in all of Qeynos. Even the Qeynos Guard uses my arrows, thanks to [Guard Weleth].",e.other:GetName()));
 	elseif(e.message:findi("guard weleth")) then
@@ -15,28 +13,26 @@ function event_say(e)
 end
 
 function event_trade(e)
-
 	local item_lib =require("items");
-	
-	if(item_lib.check_turn_in(e.trade, {item1 = 13925})) then -- Crate of Defective Arrows
+	if(item_lib.check_turn_in(e.trade, {item1 = 13925})) then -- Item: Crate of Defective Arrows
 		e.self:Say("Oh dear. I hope my mistake will not bring too much grief down on poor Weleth. He was told not to order arrows from me after the last time I fouled up their shipment. But Weleth knew I needed the account to stay in business. Could you please rush this new invoice to him right away? Thank you.");
-		e.other:SummonItem(18824); -- Slip of Parchment
+		e.other:SummonItem(18824); -- Item: Slip of Parchment
 		e.other:Ding();
-		e.other:Faction(291,10,0); -- Merchants of Qeynos
-		e.other:Faction(223,-20,0); -- Circle Of Unseen Hands
-		e.other:Faction(219,10,0); -- Antonius Bayle
-		e.other:Faction(229,10,0); -- Coalition of Tradefolk
-		e.other:Faction(262,10,0); -- Guards of Qeynos
+		e.other:Faction(291,10,0); -- Faction: Merchants of Qeynos
+		e.other:Faction(223,-20,0); -- Faction: Circle Of Unseen Hands
+		e.other:Faction(219,10,0); -- Faction: Antonius Bayle
+		e.other:Faction(229,10,0); -- Faction: Coalition of Tradefolk
+		e.other:Faction(262,10,0); -- Faction: Guards of Qeynos
 		e.other:AddEXP(8000);
-	elseif(item_lib.check_turn_in(e.trade, {item1 = 18012})) then
-		e.self:Say("Oh dear. I hope my mistake will not bring too much grief down on poor Weleth. He was told not to order arrows from me after the last time I fouled up their shipment. But Weleth knew I needed the account to stay in business. Could you please rush this new invoice to him right away? Thank you.");
+	elseif(item_lib.check_turn_in(e.trade, {item1 = 18012})) then -- Item: Claim Check
+		e.self:Say("Oh. Vesteri sent you? Here you go. I hope Te'Anara likes it");
 		e.other:SummonItem(13864); -- Item: Wooden Statue
 		e.other:Ding();
-		e.other:Faction(291,10,0); -- Merchants of Qeynos
-		e.other:Faction(223,-20,0); -- Circle Of Unseen Hands
-		e.other:Faction(219,10,0); -- Antonius Bayle
-		e.other:Faction(229,10,0); -- Coalition of Tradefolk
-		e.other:Faction(262,10,0); -- Guards of Qeynos
+		e.other:Faction(291,10,0); -- Faction: Merchants of Qeynos
+		e.other:Faction(223,-20,0); -- Faction: Circle Of Unseen Hands
+		e.other:Faction(219,10,0); -- Faction: Antonius Bayle
+		e.other:Faction(229,10,0); -- Faction: Coalition of Tradefolk
+		e.other:Faction(262,10,0); -- Faction: Guards of Qeynos
 		e.other:AddEXP(250);
 	end
 	

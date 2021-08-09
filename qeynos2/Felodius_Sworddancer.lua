@@ -13,3 +13,8 @@ function event_say(e)
 		e.self:Say("The following day. the boy was fixing a small clockwork just out of view of the guards.  A vicious kobold sprang at him and ripped into him with its big claws.  The boy screamed and cried!  Kobolds!  Kobolds!  But the guards did not come. they had grown tired of the boy's pranks the kobolds had a fine meal that night.  The end.");
 	end
 end
+
+function event_trade(e)
+	local item_lib = require("items");
+	item_lib.return_items(e.self, e.other, e.trade)
+end
