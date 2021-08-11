@@ -5,9 +5,12 @@ function event_say(e)
 		e.self:Say("Oh, Tomer? We haven't heard from him in days, I'm really starting to worry... We need to have someone go [find him].");
 	elseif(e.message:findi("find him")) then
 		e.self:Say(string.format("Tomer has not reported back in over three days. He was sent to help defend the Qeynos gates, and we haven't heard from him since. We need you to find him, if he is still alive. Tell him that Seta has sent you to find him, and escort him back to our guild. Good luck, %s.",e.other:GetName()));
-        -- TODO: set global var here for Tomer
+        -- set databucket key/value pair here
+        eq.set_data("tomers_rescue", "started");
     elseif(e.message:findi("rescued") or (e.message:findi("found")) then
         e.self:Say(string.format("Great work, %s! We thought that was the last we'd seen of young Tomer.",e.other:GetName()));
+        -- update databucket to next step
+        eq.set_data("tomers_rescue", "finished");
 	end
 end
 
