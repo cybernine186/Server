@@ -28,7 +28,7 @@ end
 
 function event_say(e)
 	if(e.message:findi("hail")) then
-		e.self:Say("My name is Hanns..  Do as I say. and we shall get along just fine.");
+		e.self:Say("My name is Hanns... Do as I say. and we shall get along just fine.");
 	elseif(e.message:findi("carson has a mole in the highpass")) then
 		e.self:Say("Arrgg, that Carson can't control anything. Sometimes he's practically useless. Go tell Zannsin that [I want him to send some of his men to Prak in Highpass], to help Carson get back on track.");
 	end
@@ -37,24 +37,29 @@ end
 function event_trade(e)
 	local item_lib = require("items");
 
-	if(item_lib.check_turn_in(e.trade, {item1 = 18708})) then -- Napkin From Crow's
+	if(item_lib.check_turn_in(e.trade, {item1 = 18708})) then -- Item: Napkin From Crow's
 		e.self:Say("Lucky thing you weren't followed. or you'd be breathing through holes in your back right now. Go find Knargon, maybe you can help run the next [shipment]. Remember, we keep our business quiet, so watch yourself, sewer crawler.");
-		e.other:SummonItem(13501); -- Second Hand Tunic*
+		e.other:SummonItem(13501); -- Item: Second Hand Tunic*
 		e.other:Ding();
-		e.other:Faction(223,100,0); -- Circle of Unseen Hands
-		e.other:Faction(291,-15,0); -- Merchants of Qeynos
-		e.other:Faction(230,15,0); -- Corrupt Qeynos Guards
-		e.other:Faction(262,-15,0); -- Guards of Qeynos
-		e.other:Faction(273,10,0); -- Kane Bayle
+		e.other:Faction(223,100,0); -- Faction: Circle of Unseen Hands
+		e.other:Faction(291,-15,0); -- Faction: Merchants of Qeynos
+		e.other:Faction(230,15,0); -- Faction: Corrupt Qeynos Guards
+		e.other:Faction(262,-15,0); -- Faction: Guards of Qeynos
+		e.other:Faction(273,10,0); -- Faction: Kane Bayle
 		e.other:AddEXP(100);
-	elseif(item_lib.check_turn_in(e.trade, {item1 = 28058})) then
-		e.self:Say("Well done, " .. e.other:GetName() .. "."); -- Text made up
+	elseif(item_lib.check_turn_in(e.trade, {item1 = 28058})) then -- Item: Head of Stanos
+		e.self:Say("YES! The bastard is dead, finally. I would have loved to do the work myself, but this will suffice. Here, take this, you have proven yourself a true friend of the Circle!"); -- Text from https://everquest.allakhazam.com/db/quest.html?quest=10109
 		e.other:SummonItem(7501); -- Item: Fanged Skull Stiletto
 		e.other:Ding();
-		e.other:Faction(223,20,0); -- Circle of Unseen Hands
+		e.other:Faction(223,200,0); -- Faction: Circle of Unseen Hands
+		e.other:Faction(291,-30,0); -- Faction: Merchants of Qeynos
+		e.other:Faction(230,30,0); -- Faction: Corrupt Qeynos Guards
+		e.other:Faction(262,-30,0); -- Faction: Guards of Qeynos
+		e.other:Faction(273,20,0); -- Faction: Kane Bayle
 		e.other:AddEXP(50000);
 	end
 	item_lib.return_items(e.self, e.other, e.trade);
 end
 
 -- Submitted by Jim Mills
+-- edited by Kefitzat

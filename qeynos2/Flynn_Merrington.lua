@@ -37,7 +37,6 @@ function event_trade(e)
 end
 
 function event_signal(e)
-
 	e.self:Say("HA! You Erudites never could handle your liquor. Go feed the fish.");
 	eq.signal(2040,1); -- NPC: Moodoro_Finharn
 	

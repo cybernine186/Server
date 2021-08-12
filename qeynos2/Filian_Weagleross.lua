@@ -1,6 +1,9 @@
 function event_say(e)
 	if(e.message:findi("hail")) then
-		e.self:Say("Pleased to meet you " .. e.other:GetName() .. ". I am Filian Weagleross High Priest of the glorious Rodcet Nife! I have recently taken upon some very [important duties] here in our temple so if your business is not urgent please excuse me.");
+		e.self:Say(string.format("Pleased to meet you, %s. I am Filian Weagleross, High Priest of the glorious Rodcet Nife! I have recently taken upon some very important duties here in our temple, so if your business is not urgent, please excuse me.",e.other:GetName()));
+
+-- Comment out OOE Newbie Armor quest lines
+--[[
 	elseif(e.message:findi("important duties")) then
 		e.self:Say("My important duties are training the new recruits of our temple. It can be quite perilious for a new adventurer in our world today as I am sure you will soon find out. The Temple of Life is dedicated to ensuring that once our young ones leave our home to venture out into Norrath they are ready for whatever might present itself. If you are a [young cleric of Rodcet] then we can begin your training at once.");
 	elseif(e.message:findi("young cleric of rodcet")) then
@@ -33,11 +36,10 @@ function event_say(e)
 		e.self:Say("As we speak I have a recruit much like yourself scouting in Blackburrow to monitor the Gnolls that reside there. They have been stockpiling supplies and many fear it is for an upcoming attack. Please deliver this bag of rations to him and return to me with his report along with 1 Perfect Gnoll Skin and 2 Severed Gnoll Paws and you shall be rewarded for your efforts.");
 		e.other:SummonItem(27498); -- Item: Bag of Rations
 	end
+]]
 end
 
 function event_trade(e)
 	local item_lib = require("items");
 	item_lib.return_items(e.self, e.other, e.trade);
 end
-
--- END of FILE Zone:qeynos2  ID:2032 -- Filian_Weagleross 

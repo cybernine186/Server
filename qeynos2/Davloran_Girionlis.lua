@@ -1,6 +1,9 @@
 function event_say(e)
 	if(e.message:findi("hail")) then
-		e.self:Say("Good day " .. e.other:GetName() .. ". I am Davloran Girionlis Holy Knight in service to the Prime Healer Rodcet Nife. I pride myself on being responsible for ridding my homeland of unimaginable evil during my fighting days. Nowadays I just like to train new Temple of Life paladin [recruits].");
+		e.self:Say(string.format("Good day %s. I am Davloran Girionlis, Holy Knight in service to the Prime Healer Rodcet Nife. I pride myself on being responsible for ridding my homeland of unimaginable evil during my fighting days. Nowadays, I just like to train new Temple of Life paladin recruits.", e.other:GetName()));
+        
+-- Commenting out Lightbringers Armor lines  
+--[[        
 	elseif(e.message:findi("recruit")) then
 		e.self:Say("We have a number of new recruits entering our guild hall every single day. For this reason I have developed a set of exercises that test the hunting and gathering skils of all young paladins. If you are a [Paladin of Rodcet] I might be able to present these tests to you as well.");
 	elseif(e.message:findi("paladin of rodcet")) then
@@ -34,11 +37,14 @@ function event_say(e)
 	elseif(e.message:findi("necessary supplies")) then
 		e.self:Say("That's great news " .. e.other:GetName() .. ", I applaud your willingness to help me gather these items. I would go get them myself but I must always be available here should any of the other newcomers need my help. Please collect 2 Flawless Gnoll Hides and 2 Wisp Essences for me and I will do my best to fashion you a weapon together for your trouble.");
 	end
+]]
 end
 
 function event_trade(e)
 	local item_lib = require("items");
-
+    
+-- No OOE 2HS, please
+--[[ 
 	if(item_lib.check_turn_in(e.trade, {item1 = 27399,item2 = 27399,item3 = 27417,item4 = 27417})) then
 		e.self:Say("These are exactly what I needed! Its for sure that I have a lot to learn about Smithing but low and behold I was able to create this fine blade out of my remaining materials. Please carry it with you as a symbol of my gratitude. Rodcet smiles down upon you young " .. e.other:GetName() .. ", you have done well.");
 		e.other:SummonItem(27490); -- Item: Rodcet Nife Defenders Blade
@@ -49,7 +55,6 @@ function event_trade(e)
 		e.other:Faction(262,3,0); -- Faction: Guards of Qeynos
 		e.other:AddEXP(100);
 	end
+]]
 	item_lib.return_items(e.self, e.other, e.trade);
 end
-
--- END of FILE Zone:qeynos2  ID:2033 -- Davloran_Girionlis

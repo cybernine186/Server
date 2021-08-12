@@ -30,7 +30,7 @@ function event_say(e)
 		e.self:Say("Carson McCabe? He runs that sham of a fortress called [Highpass Hold]. We've been dealing with him for a few years, now. But, lately he seems to be losing control of his business. [Hanns] will whip him into shape pretty soon though, I bet.");
 	elseif(e.message:findi("shipment")) then
 		e.self:Say("We have a small shipment of goods coming in later tonight. The [courier] will be waiting outside the city gates. Casually tell the courier [Lovely night for a stroll], and give him this old card as proof that you work for us. Make certain that you are not followed, and return the shipment to me.");
-		e.other:SummonItem(13903); -- Bent Playing Card
+		e.other:SummonItem(13903); -- Item: Bent Playing Card
 	elseif(e.message:findi("courier")) then
 		e.self:Say("The courier that usually runs [McCabe]'s shipment, is that good for nothing J'Racol. I don't trust his kind.");
 	end
@@ -39,17 +39,15 @@ end
 function event_trade(e)
 	local item_lib = require("items");
 
-	if(item_lib.check_turn_in(e.trade, {item1 = 18722})) then -- Sealed Note For Knargon
+	if(item_lib.check_turn_in(e.trade, {item1 = 18722})) then -- Item: Sealed Note For Knargon
 		e.self:Say("Hmm. Carson better deal with his little 'problem' soon, it's costing us a lot of money. Hanns is gonna skin us all when he hears this. Go tell Hanns that [Carson has a mole in the Highpass] guards, and see what he wants us to do.");
 		e.other:Ding();
-		e.other:Faction(223,5,0); -- Circle of Unseen Hands
-		e.other:Faction(230,5,0); -- Corrupt Qeynos Guards
-		e.other:Faction(273,5,0); -- Kane Bayle
-		e.other:Faction(291,-10,0); -- Merchants of Qeynos
-		e.other:Faction(262,-10,0); -- Guards of Qeynos
+		e.other:Faction(223,5,0); -- Faction: Circle of Unseen Hands
+		e.other:Faction(230,5,0); -- Faction: Corrupt Qeynos Guards
+		e.other:Faction(273,5,0); -- Faction: Kane Bayle
+		e.other:Faction(291,-10,0); -- Faction: Merchants of Qeynos
+		e.other:Faction(262,-10,0); -- Faction: Guards of Qeynos
 		e.other:AddEXP(500);
 	end
 	item_lib.return_items(e.self, e.other, e.trade);
 end
-
---END of FILE Zone:qeynos2  ID:2063 -- Knargon_Lanenda

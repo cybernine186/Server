@@ -6,7 +6,12 @@ function event_say(e)
 	elseif(e.message:findi("captain rohand")) then
 		e.self:Say("Captain Rohand runs the Mermaid's Lure and trades goods with the sea merchants from Odus.");
 	elseif(e.message:findi("package")) then
-		e.self:Say("I need someone to take this package to Den. He'll make sure it goes out on the next ship to Odus. I owe him a small favor, too.. So when you meet up with him, I need you to do whatever you can to help him out. Do a good job.");
+		e.self:Say("I need someone to take this package to Den. He'll make sure it goes out on the next ship to Odus. I owe him a small favor, too... So when you meet up with him, I need you to do whatever you can to help him out. Do a good job.");
 		e.other:SummonItem(13784); -- Package for Den
 	end
+end
+
+function event_trade(e)
+	local item_lib = require("items");
+	item_lib.return_items(e.self, e.other, e.trade);
 end

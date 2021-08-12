@@ -6,6 +6,10 @@ end
 
 function event_say(e)
 	if(e.message:findi("hail")) then
-		e.self:Say(string.format("Hello there. %s.  Obyn is my name.  Are you from Qeynos?  I was born here myself.  It's the best city in all of Norrath. if you ask me.  Well I'd better get back to guarding.",e.other:GetName()));
+		e.self:Say(string.format("Hello there, %s. Obyn is my name. Are you from Qeynos?  I was born here myself. It's the best city in all of Norrath. if you ask me. Well, I'd better get back to guarding.",e.other:GetName()));
 	end
+end
+
+function event_death(e)
+    e.self:Say(string.format("My comrades will avenge my death."));
 end

@@ -9,3 +9,8 @@ function event_say(e)
 		e.self:Say("Your standard Antonian long sword is crafted from a folded sheet of metal, a long blade mold, a hilt mold, pommel mold, and a flask of water. The finest of the Antonian long swords are crafted from an enchanted folded sheet of metal, long blade mold, hilt mold, pommel mold, royal temper and either a ruby or an emerald forged into the weapon at the time of its creation.");
 	end
 end
+
+function event_trade(e)
+	local item_lib = require("items");
+	item_lib.return_items(e.self, e.other, e.trade)
+end

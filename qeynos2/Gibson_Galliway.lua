@@ -1,6 +1,8 @@
 function event_say(e)
 	if(e.message:findi("hail")) then
-		e.self:Say("Hello stranger. Welcome to Galliway's. Please excuse me. I am very [tired] right now.");
+		e.self:Say("Hello stranger. Welcome to Galliway's. Please excuse me. I am very tired right now.");
+-- Remove OOE Dialogue
+--[[
 	elseif(e.message:findi("tired")) then
 		e.self:Say("I have just arrived home after a trip to Halas where I was supposed to pick up a shipment of furs for my father, Sneed. However it all went [wrong].");
 	elseif(e.message:findi("wrong")) then
@@ -16,16 +18,19 @@ function event_say(e)
 	elseif(e.message:findi("help")) then
 		e.self:Say("I am in your debt! While I was imprisoned in the mines of Nadox, I saw a gigantic ship. It is called the Hate's Fury. I frequently saw Ralo going to and from the ship. He often came out just to taunt me and throw rocks at me. If you can find him and get my ring back, I will do all I can to find something to pay you back with. And if Ralo manages to get hurt, that would be an added bonus. Please return when you have my ring. I must get back to work. Gibson addresses his father, Sneed. 'Sorry father, I will finish dusting the shelves now.");
 	end
+]]
 end
 
 function event_trade(e)
 	local item_lib = require("items");
-
+-- Remove OOE quest rewards
+--[[
 	if(item_lib.check_turn_in(e.trade, {item1 = 55006})) then
 		e.self:Say("You really did it? Yes, this is my ring! I cannot believe it! Father look! He has returned my ring to me!' Sneed ignores Gibson. 'I found this the other day in an old storage room. Perhaps it will aid you in your adventures. You are truly a friend to Sneed's Trading Outpost. Remember to come back again some time. I was going to offer you a discount on all goods here but father wouldn't allow it. I must get back to work now. Farewell, friend!");
 		e.other:SummonItem(55026); -- Item: Galliways' Ring of Good Fortune
 		e.other:Ding();
 		e.other:AddEXP(15000);
 	end
+]]
 	item_lib.return_items(e.self, e.other, e.trade)
 end
