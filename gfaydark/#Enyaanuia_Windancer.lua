@@ -1,3 +1,4 @@
+--LDON ERA
 function event_say(e)
 	local level = e.other:GetLevel();
 	local global = eq.get_qglobals(e.other);

@@ -39,10 +39,12 @@ sub EVENT_ITEM {
 		quest::faction(316, 10);#Scouts of Tunare
 		quest::exp(800);#10% of level 3 experience.  Newbie quest, being a bit generous compared to the guidelines.
 	} 
-	if(plugin::check_handin(\%itemcount, 16390 => 1)) {#Crumpled Piece of Paper
-		quest::say("Ahhh! You found it! Here let me make you a copy and put this in a secure spot so I don't lose it again.");
-		quest::summonitem(24098);#Remiss Sketch
-		quest::exp(5061818);#This is 2% of level 53 xp.
+	if(quest::is_the_planes_of_power_enabled()){	
+		if(plugin::check_handin(\%itemcount, 16390 => 1)) {#Crumpled Piece of Paper
+			quest::say("Ahhh! You found it! Here let me make you a copy and put this in a secure spot so I don't lose it again.");
+			quest::summonitem(24098);#Remiss Sketch
+			quest::exp(5061818);#This is 2% of level 53 xp.
+		}
 	}
   	#do all other handins first with plugin, then let it do disciplines
   	plugin::try_tome_handins(\%itemcount, $class, 'Rogue');
