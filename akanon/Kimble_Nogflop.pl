@@ -17,7 +17,10 @@ sub EVENT_ITEM {
     quest::faction(71, -30);
     quest::faction(37, -30);
     quest::exp(100);
-  }
+  } else {
+		
+		plugin::return_items(\%itemcount);
+	}
 }
 
 # Quest edited by mystic414

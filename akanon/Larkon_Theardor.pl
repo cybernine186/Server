@@ -54,7 +54,7 @@ sub EVENT_SAY {
 
 sub EVENT_ITEM {
 	#:: Match two 13077 -  Minotaur Horn
-	if (plugin::takeItems(13077 => 2)) {
+	if (plugin::check_handin(\%itemcount, 13077 => 2)) {
 		#:: Match if faction is Amiable or better
 		if ($faction <= 4) {
 			quest::say("Fine work. You have earned the respect of the Library. Here is a small token of our appreciation. We shall have this ground down as soon as we find someone to go to [Kaladim].");
@@ -82,7 +82,7 @@ sub EVENT_ITEM {
 		}
 	}
 	#:: Match one 13077 -  Minotaur Horn
-	elsif (plugin::takeItems(13077 => 1)) {
+	elsif (plugin::check_handin(\%itemcount, 13077 => 1)) {
 		#:: Match if faction is Amiable or better
 		if ($faction <= 4) {
 			quest::say("'I will require Two Minotaur Horns for further studies.");
@@ -97,7 +97,7 @@ sub EVENT_ITEM {
 		}
 	}	
 	#:: Match a 13071 -  Air Tight Box
-	elsif (plugin::takeItems(13271 => 1)) {
+	elsif (plugin::check_handin(\%itemcount, 13271 => 1)) {
 		quest::say("Ah! See? you weren't too afraid to get your hands dirty after all. Now go take a bath!");
 		#:: Give item 10017 - Turquoise
 		quest::summonitem(10017);
@@ -117,7 +117,7 @@ sub EVENT_ITEM {
 		quest::givecash($cash{copper},$cash{silver},$cash{gold},$cash{platinum});
 	}
 	#:: Match four 12160 -  Basilisk Tongue
-	elsif (plugin::takeItems(12160 => 4)) {
+	elsif (plugin::check_handin(\%itemcount, 12160 => 4)) {
 		#:: Match if faction is Amiable or better
 		if ($faction <= 4) {
 			quest::say("What took you so long?!! These tongues are nearly dried out!! Here. A scroll from the Magicians Hold. Learn it and serve!!");
@@ -149,7 +149,7 @@ sub EVENT_ITEM {
 		}
 	}
 	#:: Match three 12160 -  Basilisk Tongue
-	elsif (plugin::takeItems(12160 => 3)) {
+	elsif (plugin::check_handin(\%itemcount, 12160 => 3)) {
 		#:: Match if faction is Amiable or better
 		if ($faction <= 4) {
 			quest::say("I believe I called for FOUR Basilisk Tongues.");
@@ -168,7 +168,7 @@ sub EVENT_ITEM {
 		}
 	}
 	#:: Match two 12160 -  Basilisk Tongue
-	elsif (plugin::takeItems(12160 => 2)) {
+	elsif (plugin::check_handin(\%itemcount, 12160 => 2)) {
 		#:: Match if faction is Amiable or better
 		if ($faction <= 4) {
 			quest::say("I believe I called for FOUR Basilisk Tongues.");
@@ -185,7 +185,7 @@ sub EVENT_ITEM {
 		}
 	}
 	#:: Match one 12160 -  Basilisk Tongue
-	elsif (plugin::takeItems(12160 => 1)) {
+	elsif (plugin::check_handin(\%itemcount, 12160 => 1)) {
 		#:: Match if faction is Amiable or better
 		if ($faction <= 4) {
 			quest::say("I believe I called for FOUR Basilisk Tongues.");
@@ -200,7 +200,7 @@ sub EVENT_ITEM {
 		}
 	}
 	#:: Turn in for 12160 -  Bozinite Pestle
-	elsif (plugin::takeItems(13272 => 1)) {
+	elsif (plugin::check_handin(\%itemcount, 13272 => 1)) {
 		quest::say("Outstanding $name!! This should be of help to you.");
 		#:: Randomly choose various mage level spells excluding pet item spells
 		quest::summonitem(quest::ChooseRandom(15205,15211,15288,15310,15311,15313,15331,15050,15093,15315,15316,15058,15317,15318,15036,15094,15246,15322,15323,15325,15851,15324,15332,15400,15399,15398,15042,15613));
@@ -218,7 +218,8 @@ sub EVENT_ITEM {
 		my %cash = plugin::RandomCash(1500,1600);
 		#:: Grant a random cash reward
 		quest::givecash($cash{copper},$cash{silver},$cash{gold},$cash{platinum});
+	}else {
+		
+		plugin::return_items(\%itemcount);
 	}
-	#:: Return unused items
-	plugin::returnUnusedItems();
 }

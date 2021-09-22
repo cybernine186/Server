@@ -8,7 +8,7 @@ sub EVENT_ITEM {
 	quest::summonitem("13518");
 	quest::exp("100");
 	} else {
-		plugin::traindiscs();
+		
 		plugin::return_items(\%itemcount);
 	}
 }

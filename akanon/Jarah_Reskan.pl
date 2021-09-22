@@ -11,7 +11,7 @@ quest::say("The clockworks are the responsibility of Manik Compolten. Speak with
 
 sub EVENT_ITEM {
  #do all other handins first with plugin, then let it do disciplines
- plugin::traindiscs();
+ 
  plugin::return_items(\%itemcount);
 }
 #END of FILE Zone:akanon  ID:55172 -- Jarah_Reskan 

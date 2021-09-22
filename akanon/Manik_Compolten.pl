@@ -73,7 +73,7 @@ sub EVENT_SAY {
 
 sub EVENT_ITEM {
 	#:: Match a 13208 - Rusted Blackbox
-	if (plugin::takeItems(13208 => 1)) {
+	if (plugin::check_handin(\%itemcount, 13208 => 1)) {
 		quest::say("Ah! Excellent work! I think we may have further use for you if you like.");
 		#:: Ding!
 		quest::ding();
@@ -91,7 +91,7 @@ sub EVENT_ITEM {
 		quest::givecash($cash{copper},$cash{silver},$cash{gold},$cash{platinum});
 	}
 	#:: Match a 13212 - Blackbox XIIC, a 13211 - Blackbox XXVIC, a 13213 - Blackbox XVIIC, and a 13214 - Blackbox XXVIIC
-	elsif (plugin::takeItems(13212 => 1, 13211 => 1, 13213 => 1, 13214 => 1)) {
+	elsif (plugin::check_handin(\%itemcount, 13212 => 1, 13211 => 1, 13213 => 1, 13214 => 1)) {
 		quest::say("Ah!! I see you had no problem finding all of the C series clockworks. Good work. Here. Take this blackbox. We received it from Clockwork 27C. Take it to Jogl Doobraugh. He is the operator of the only blackbox definer in Ak'Anon. He is out at the windmills checking on their operation.");
 		#:: Give a 13209 - Blackbox XXVIIC (Blackbox for 27C Returned)
 		quest::summonitem(13209);
@@ -111,7 +111,7 @@ sub EVENT_ITEM {
 		quest::givecash($cash{copper},$cash{silver},$cash{gold},$cash{platinum});
 	}
 	#:: Match a 13215 - Rusted Black Box - Red V Clockwork
-	elsif (plugin::takeItems(13215 => 1)) {
+	elsif (plugin::check_handin(\%itemcount, 13215 => 1)) {
 		quest::say("This is fabulous news!! You have done well, young one.");
 		#:: Give a random reward: 13219 - Bull Smasher, 13220 - Iony's Absorber, 1013 - Small Cloth Cap, 1018 - Small Cloth Cape, 1015 - Small Cloth Choker, 1019 - Small Cloth Cord, 1022 - Small Cloth Gloves, 
 		#:: 1023 - Small Cloth Pants, 1024 - Small Cloth Sandals, 1017 - Small Cloth Shawl, 1016 - Small Cloth Shirt, 1020 - Small Cloth Sleeves, 1014 - Small Cloth Veil, 1021 - Small Cloth Wristband
@@ -132,9 +132,10 @@ sub EVENT_ITEM {
 		quest::givecash($cash{copper},$cash{silver},$cash{gold},$cash{platinum});
 	}
 	#:: Match a 13212 - Blackbox XIIC, or a 13211 - Blackbox XXVIC, or a 13213 - Blackbox XVIIC, or a 13214 - Blackbox XXVIIC
-	elsif (plugin::takeItems(13212 => 1) || plugin::takeItems(13211 => 1) || plugin::takeItems(13213 => 1) || plugin::takeItems(13214 => 1)) {
+	elsif (plugin::check_handin(\%itemcount, 13212 => 1) || plugin::check_handin(\%itemcount, 13211 => 1) || plugin::check_handin(\%itemcount, 13213 => 1) || plugin::check_handin(\%itemcount, 13214 => 1)) {
 		quest::say("A generous offer. Thank you for your donations to Gemchopper Hall. I shall have this recyled.");
+	} else {
+		
+		plugin::return_items(\%itemcount);
 	}
-	#:: Return unused items
-	plugin::returnUnusedItems();
 }

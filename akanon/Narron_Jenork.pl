@@ -12,7 +12,7 @@ sub EVENT_SAY {
 
 sub EVENT_ITEM {
 	#:: Match a 12378 - Box of Undead Brownie Bones
-	if (plugin::takeItems(12378 => 1)) {
+	if (plugin::check_handin(\%itemcount, 12378 => 1)) {
 		quest::say("Wonderful!! Watchman Dexlin sent word that you would be returning these specimens. I shall see that the Eldritch Collective gets them. For you there is a reward. Manik has donated a pair of Watchman boots!!");
 		#:: Give a 12379 - Watchman Boots
 		quest::summonitem(12379);
@@ -30,7 +30,8 @@ sub EVENT_ITEM {
 		my %cash = plugin::RandomCash(4800,5200);
 		#:: Grant a random cash reward
 		quest::givecash($cash{copper},$cash{silver},$cash{gold},$cash{platinum});
+	} else {
+		
+		plugin::return_items(\%itemcount);
 	}
-	#:: Return unused items
-	plugin::returnUnusedItems();
 }

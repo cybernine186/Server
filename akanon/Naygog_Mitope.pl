@@ -6,7 +6,7 @@ quest::say("Hail $name. I train those young gnomes who wish to [serve as a warri
 
 sub EVENT_ITEM {
  #do all other handins first with plugin, then let it do disciplines
- plugin::traindiscs();
+ 
  plugin::return_items(\%itemcount);
 }
 #END of FILE Zone:akanon  ID:55157 -- Naygog_Mitope 

@@ -26,7 +26,7 @@ sub EVENT_ITEM {
 		#:: Grant a small amount of experience
 		quest::exp(100);
 	} else {
-		plugin::traindiscs();
+		
 		plugin::return_items(\%itemcount);
 	}
 }

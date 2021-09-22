@@ -15,7 +15,10 @@ sub EVENT_ITEM {
     quest::faction(209,-10); # -Meldrath
     quest::exp(5);
     quest::givecash(1,1,1,0);
-  }
+  } else {
+		
+		plugin::return_items(\%itemcount);
+	}
 } 
 
 

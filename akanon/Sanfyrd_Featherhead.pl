@@ -17,7 +17,7 @@ sub EVENT_SAY {
 
 sub EVENT_ITEM {
 	#:: Match four 13198 - Scrap Metal
-	if (plugin::takeItems(13198 => 4)) {
+	if (plugin::check_handin(\%itemcount, 13198 => 4)) {
 		quest::say("Grand! We always need more scraps to melt down. Here you are, then... Some coins for supporting Ak'Anon and a salvaged item from the scrapyard.");
 		#:: Give a random reward: 5013 - Rusty Short Sword, 5014 - Rusty Axe, 5015 - Rusty Scythe, 5016 - Rusty Broad Sword, 5019 - Rusty Long Sword, 5020 - Rusty Battle Axe, 12340 - Gnome Glow Rod
 		quest::summonitem(quest::ChooseRandom(5013, 5013, 5013, 5014, 5014, 5014, 5015, 5015, 5015, 5016, 5016, 5016, 5019, 5019, 5019, 5020, 5020, 5020, 12340, 12340));
@@ -38,7 +38,7 @@ sub EVENT_ITEM {
 	}
 
 	#:: Match a 12336 - Crate of Tonic
-	elsif (plugin::takeItems(12336 => 1)) {
+	elsif (plugin::check_handin(\%itemcount, 12336 => 1)) {
 		quest::say("Huzzah!! You are my friend. Now you can take my old toupee and get it repaired. Just go to Freeport and ask Ping to [repair the toupee]. Hey!! You know what? He is the guy who sells the hair tonic!! I remember now. Well,.. Get my toupee repaired and I will give you the fairie wing.");
 		#:: 12337 - Tattered Toupee
 		quest::summonitem(12337); 
@@ -58,7 +58,7 @@ sub EVENT_ITEM {
 		quest::givecash($cash{copper},$cash{silver},$cash{gold},$cash{platinum});
 	}
 	#:: Match a 12254 - Mane Attraction
-	elsif (plugin::takeItems(12254 => 1)) {
+	elsif (plugin::check_handin(\%itemcount, 12254 => 1)) {
 		quest::say("Double Huzzah!! You are a good friend $name. Now mayhaps I shall find myself a wife. Here pal, the fairy wing. I hope it can give you a great head of hair. You need it.");
 		#:: 12339 - Glimmering Fairie Wing
 		quest::summonitem(12339); 
@@ -78,7 +78,7 @@ sub EVENT_ITEM {
 		quest::givecash($cash{copper},$cash{silver},$cash{gold},$cash{platinum});
 	}
 	#:: Match a 13216 - Scrap Metal and a 13217 - Scrap Metal
-	elsif (plugin::takeItems(13216 => 1, 13217 => 1)) {
+	elsif (plugin::check_handin(\%itemcount, 13216 => 1, 13217 => 1)) {
 		quest::say("Good. The citizens of Ak'Anon are safe from those little critters. They may have injured someone; that is why they were deactivated. Here is something I found in the scrapyard. I hope you can find a purpose for it.");
 		#:: Randomly choose one of Bootstrutter's Framed Pack or Forging Hammer
 		quest::summonitem(quest::ChooseRandom(17981, 17981, 6027));
@@ -96,7 +96,8 @@ sub EVENT_ITEM {
 		my %cash = plugin::RandomCash(1100,1200);
 		#:: Grant a random cash reward
 		quest::givecash($cash{copper},$cash{silver},$cash{gold},$cash{platinum});
-	}
-	#:: Return unused items
-	plugin::returnUnusedItems();
+	} else {
+		
+		plugin::return_items(\%itemcount);
+	} 
 }
