@@ -50,9 +50,6 @@ sub EVENT_SAY {
 			quest::say("You dare to speak to a member of the Eldritch Collective!! You had best leave before you find your soul displaced from your body.");
 		}
 	}
-	elsif ($text=~/kaladim/i) {
-		quest::say("We need someone to venture to the dwarven kingdom of Kaladim and speak with Myre of Miner's Guild 628. She has a delivery of special pestles made from bozinite. If you feel up to it, go to her and tell her you are from the Eldritch Collective and desire the bozinite pestles. Return them to me.");
-	}
 }
 
 sub EVENT_ITEM {
