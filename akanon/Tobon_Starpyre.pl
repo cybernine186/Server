@@ -14,7 +14,7 @@ sub EVENT_SAY {
 	if ($text=~/hail/i) {
 		quest::say("It is good to see the young show an interest in the ways of magic. Its circles can be used in tandem with our unique ways of tinkering. Have you [joined the Eldritch Collective] or are you [merely curious]?");
 	}
-	elsif ($text=~/joined the Eldritch Collective/i) {
+	elsif ($text=~/joined the Eldritch Collective/i && $faction <= 4) {
 		quest::say("Very good. Would you like to [go on a little mission] or are you busy studying?");
 	}
 	elsif ($text=~/merely curious/i) {

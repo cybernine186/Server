@@ -9,7 +9,7 @@ sub EVENT_SAY {
 
 sub EVENT_ITEM {
 	#:: Match a 10351 -  Brass Earring
-	if (plugin::takeItems(10351 => 1)) {
+	if (plugin::check_handin(\%itemcount, 10351 => 1)) {
 		quest::say("Outstanding! If you can kill the taskmaster, you might prove useful in recovering the items the orcs took from me when they caught me out in the Faydarks. [Interested] in helping me out?");
 		#:: Give item 13850 - Unfinished Blade Mold
 		quest::summonitem(13850);
@@ -20,7 +20,7 @@ sub EVENT_ITEM {
 
 	}
 	#:: Match a 9307 -  Shiny Brass Shield
-	elsif (plugin::takeItems(9307 => 1)) {
+	elsif (plugin::check_handin(\%itemcount, 9307 => 1)) {
 		quest::say("MY SHIELD!! Excellent, laddie! Next item on the list is my ringmail. Once I have my [ringmail], I am out of here for good. I will finally be able to leave!");
 		#:: Give item 13850 - Unfinished Sledge Mold
 		quest::summonitem(13851);
@@ -30,7 +30,7 @@ sub EVENT_ITEM {
 		quest::exp(3000);
 	}
 	#:: Match a 3301 -  Dwarven Ringmail Tunic
-	elsif (plugin::takeItems(3301 => 1)) {
+	elsif (plugin::check_handin(\%itemcount, 3301 => 1)) {
 		quest::say("AHA!! My ringmail!! My, you ARE a resourceful one! Here is your reward as promised. It is exquisite, if I do say so myself. You might also wish to tell the priest in the cell over there that the king is dead. I am sure he will be pleased to hear that and might even be able to help you further. Farewell! It's time for me to make my escape!");
 		#:: Give item 6315- Dwarven Mace
 		quest::summonitem(6315);
@@ -42,7 +42,7 @@ sub EVENT_ITEM {
 		quest::settimer("depop", 60);
 	}
 	#:: Return unused items
-	plugin::returnUnusedItems();
+	else {plugin::return_items(\%itemcount);}
 }
 
 sub EVENT_TIMER {

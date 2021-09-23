@@ -12,7 +12,7 @@ sub EVENT_SAY {
 
 sub EVENT_ITEM {
 	#:: Match a 20015 - Shackle Key 15
-	if (plugin::takeItems(20015 => 1)) {
+	if (plugin::check_handin(\%itemcount, 20015 => 1)) {
 		quest::say("Good work!! I shall be on my way. Farewell my friend!!");
 		#:: Ding!
 		quest::ding();
@@ -31,7 +31,7 @@ sub EVENT_ITEM {
 		quest::settimer("depop", 240);
 	}
 	#:: Match a 18887 -  Sealed Letter (Note to Retlon Brenclog)
-	elsif (plugin::takeItems(18887 => 1)) {
+	elsif (plugin::check_handin(\%itemcount, 18887 => 1)) {
 		quest::say("Ah! A letter from my brother! Mmm... no... no I don't have Tergon's spellbook. The orc's prophet took it and then they locked me in chains! Now why don't you go do something useful and get me key number 15!!");
 		#:: Ding!
 		quest::ding();
@@ -48,7 +48,7 @@ sub EVENT_ITEM {
 		quest::givecash($cash{copper},$cash{silver},$cash{gold},$cash{platinum});
 	}
 	#:: Return unused items
-	plugin::returnUnusedItems();
+	else {plugin::return_items(\%itemcount);}
 }
 
 sub EVENT_TIMER {

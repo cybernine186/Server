@@ -6,7 +6,7 @@ sub EVENT_SAY{
 
 sub EVENT_ITEM {
 	#:: Match a 19030 - Crate of Teir`Dal Provisions
-	if (plugin::takeItems(19030 => 1)){
+	if (plugin::check_handin(\%itemcount, 19030 => 1)){
 		quest::say("Finally!! We have been in dire need of these supplies for quite some time, Kalaelil! Here is the receipt for the shipment. The last shipment never made it here and there is an item of great importance stored in the lost crate. Before you return to Neriak, your services are needed to retrieve our [missing shipment]. I command your obedience as is my right as a dragoon of Naythox Thex's personal regime.");
 		#:: Give a 19029 - Receipt for Provisions Crate
 		quest::summonitem(19029);
@@ -20,7 +20,7 @@ sub EVENT_ITEM {
 		quest::exp(500);
 	}
 	#:: Match a 19028 - Missing Teir`Dal Crate
-	elsif (plugin::takeItems(19028 => 1)){
+	elsif (plugin::check_handin(\%itemcount, 19028 => 1)){
 		quest::say("What is this!! The items of importance have been removed from the crate!! This is most unfortunate. However, you have done well in your service to the Teir'Dal Empire. Take this voucher of services rendered under the command of Naythox Thex back to Ithvol along with the head of that slain Fier'Dal, the receipt for the provisions, and your disciple symbol of Innoruuk.");
 		#:: Give a 12499 - Voucher of Service to Naythox
 		quest::summonitem(12499);
@@ -34,5 +34,5 @@ sub EVENT_ITEM {
 		quest::exp(1500);
 	}
 	#:: Return unused items
-	plugin::returnUnusedItems();
+	else {plugin::return_items(\%itemcount);}
 }

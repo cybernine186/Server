@@ -1,22 +1,21 @@
-sub EVENT_SAY {	
-	if ($text=~/hail/i) {
-		quest::say("Pleasure to meet you.  Keep your eye out for the ship.  You don't want to miss it.");
-	}
-	elsif ($text=~/mudtoe's|mudtoes/i) {
-		quest::say("Mudtoes!! I have heard tales of that foul clan of ogres. A few passengers aboard the ships have claimed to have seen one of them, off and on, amongst the pirates in the Ocean of Tears!!");
-	}
-	elsif ($text=~/i love you/i) {
-		quest::say("Glorin and $name. We would make a fine couple.");
-	}
-	elsif ($text=~/marry me/i) {
-		quest::say("Why yes I'll marry you $name. We would make a fine couple.");
-	}
-	elsif ($text=~/you are ugly/i) {
-		quest::say("I believe the word '$name' is dwarven for ignorant, smelly skuzz bucket. That's what I hear.");
-	}
+sub EVENT_SAY { 
+if($text=~/Hail/i){
+quest::say("Pleasure to meet you.  Keep your eye out for the [ship].  You don't want to miss it.");
+ }
+elsif($text=~/ship/i){
+quest::emote("looks up dreamily, 'Aye, the good ship SirensBane, did us all a great [service] in her day ...'");
 }
+elsif($text=~/service/i){
+quest::emote("sadly recalls, 'Used to [carry] many adventurer to the Ocean of Tears, even as far as Freeport.'");
+}
+elsif($text=~/carry/i){
+quest::emote("sighs, 'All that's left of her now, is a [ghost] of a memory ....'");
+}
+elsif($text=~/ghost/i){
+quest::say("Walk into the ghost, she might help you get on your way - and don't ever forget the SirensBane ... ");
+ }
+}
+#END of FILE Zone:butcher  ID:68064 -- Glorin_Binfurr 
+#Revised AngeloX
+#Remember the SirensBane!
 
-sub EVENT_ITEM {
-	#:: Return unused items
-	plugin::returnUnusedItems();
-}

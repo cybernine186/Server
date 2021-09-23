@@ -62,7 +62,7 @@ sub EVENT_SAY {
 
 sub EVENT_ITEM {
 	#:: Match a 18841 - Sealed Letter
-	if (plugin::takeItems(18841 => 1)) {
+	if (plugin::check_handin(\%itemcount,18841 => 1)) {
 		quest::say("So I see you completed your mission. Good work. You just may be a member of the Silent Watch someday. Well my friend. I will be keeping my eye on you. No doubt we will meet again. Oh, I almost forgot. The Princess wanted you to have this. Now show yourself the door.");
 		#:: Give a 13353 - Thex Dagger
 		quest::summonitem(13353);
@@ -76,5 +76,7 @@ sub EVENT_ITEM {
 		quest::exp(2000);
 	}
 	#:: Return unused items
-	plugin::returnUnusedItems();
+	else {
+		plugin::return_items(\%itemcount);
+	}
 }

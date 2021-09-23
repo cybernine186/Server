@@ -12,7 +12,7 @@ sub EVENT_SAY {
 
 sub EVENT_ITEM {
 	#:: Match a 12339 - Glimmering Fairie Wing
-	if (plugin::takeItems(12339 => 1)) {
+	if (plugin::check_handin(\%itemcount, 12339 => 1)) {
 		quest::say("My wing!! I am so happy!! Thank you $name. You have proved that I can trust giants once again. Please take a Pouch of Fairie Gold Dust. Its magical properties are desired by all.");
 		#:: Give a 12333 - Pouch of Gold Dust
 		quest::summonitem(12333);
@@ -24,5 +24,5 @@ sub EVENT_ITEM {
 		quest::faction(388, 100); 	#:: + Fairie
 	}
 	#:: Return unused items
-	plugin::returnUnusedItems();
+	else {plugin::return_items(\%itemcount);}
 }
