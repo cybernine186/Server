@@ -14,10 +14,15 @@ sub EVENT_SAY {
   }
   if ($text=~/travel to freeport/i){
     quest::say("Off you go!");
-    quest::movepc(10,-1006.66,-14.65,-53.47,64); # Zone: freporte
+	if(quest::is_prophecy_of_ro_enabled())
+	{
+		quest::movepc(382,-973,-121,4,353); # Zone: freporte
+	} else {
+		quest::movepc(10,-1006.66,-14.65,-53.47,383); # Zone: freporte
+	}
   }
   if ($text=~/travel to butcherblock/i){
     quest::say("Off you go!");
-    quest::selfcast(2280);
+    quest::movepc(68,3237,1355,14,128); # Zone: butcher
   }
 }
