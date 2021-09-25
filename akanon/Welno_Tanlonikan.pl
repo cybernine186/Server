@@ -1,7 +1,7 @@
 
 sub EVENT_SAY {
  if($text =~ /Hail/i) {
-	quest::say('Hello. I am the guild master.');
+	quest::say('Hello. I am the guild master.'); #fake
  }
 }
 
