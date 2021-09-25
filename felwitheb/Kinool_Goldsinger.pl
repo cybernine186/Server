@@ -48,7 +48,7 @@ sub EVENT_SAY {
 
 sub EVENT_ITEM {
 	#:: Match a 18778 - Enrollment Letter
-	if (plugin::takeItems(18778 => 1)) {
+	if (plugin::check_handin(\%itemcount,18778 => 1)) {
 		quest::say("Greetings and welcome aboard!  My name's Kinool. Master Enchanter of the Keepers of the Art.  Here is your guild tunic. Make us proud, young pupil! Once you are ready to begin your training please make sure that you see Yuin Starchaser, he can assist you in developing your hunting and gathering skills. Return to me when you have become more experienced in our art, I will be able to further instruct you on how to progress through your early ranks, as well as in some of the various [trades] you will have available to you.");
 		#:: Give item 13593 - Torn Training Robe*
 		quest::summonitem(13593);
@@ -73,5 +73,7 @@ sub EVENT_ITEM {
 		quest::exp(5000);
 	}
 	#:: Return unused items
-	plugin::returnUnusedItems();
+	else {
+		plugin::return_items(\%itemcount);
+	}
 }

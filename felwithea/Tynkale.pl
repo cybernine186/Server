@@ -60,7 +60,7 @@ sub EVENT_SAY {
 
 sub EVENT_ITEM {
 	#:: Turn in for 18781 -  A Tattered Note
-	if (plugin::takeItems(18781 => 1)) {
+	if (plugin::check_handin(\%itemcount, 18781 => 1)) {
 		quest::say("Greetings. young paladin!  I am Master Tynkale of the Clerics of Tunare.  Here, we shall teach and train you in the skills needed to defeat our evil and diseased enemies.  Take this, our guild tunic - it will help protect you.  Once you are ready to begin your training please make sure that you see Seria Woodwind, she can assist you in experienced in our art, I will be able to further instruct you on how to progress through your early ranks, as well as in some of the various [trades] you will have available to you.");
 		#:: Give item 13591 - Used Gold Training Tunic*
 		quest::summonitem(13591);
@@ -74,7 +74,7 @@ sub EVENT_ITEM {
 		quest::faction(5001,75); 		#:: + Anti-mage
 	}
 	#:: Turn in for 13351 -  A Very Large Pelt
-	if (plugin::takeItems(13351 => 1)) {
+	if (plugin::check_handin(\%itemcount, 13351 => 1)) {
 		#:: Match if faction is better than indifferent
 		if ($faction < 5) {
 			quest::say("So you have proven yourself to be a great slayer of beasts. Now it is time to prove yourself to be an asset to the Crown. You are to meet a man named Tolon Nurbyte, he will be at the local inn. Go to him and repeat the phrase, 'The glory of the Mother shines bright.' I can say no more.");
@@ -89,5 +89,7 @@ sub EVENT_ITEM {
 		}
 	}
 	#:: Return unused items
-	plugin::return_items(\%itemcount);
+	else {
+		plugin::return_items(\%itemcount);
+	}
 }

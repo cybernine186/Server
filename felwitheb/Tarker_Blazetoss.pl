@@ -31,7 +31,7 @@ sub EVENT_SAY {
 
 sub EVENT_ITEM {
 	#:: Turn in for 18779 -  Enrollment letter
-	if (plugin::takeItems(18779 => 1)) {
+	if (plugin::check_handin(\%itemcount, 18779 => 1)) {
 		quest::say("Welcome to the wizards' guild of the Keepers of the Art. My name's Tarker, and I run this guild. You've got a lot of training ahead of you, so let's get started. Here, take this - it's our guild tunic. Wear it with honor, friend. Once you are ready to begin your training please make sure that you see Yuin Starchaser, he can assist you in developing your hunting and gathering skills. Return to me when you have become more experienced in our art, I will be able to further instruct you on how to progress through your early ranks, as well as in some of the various [trades] you will have available to you.");
 		#:: Give item 13542 - Faded Blue Robe*
 		quest::summonitem(13542);
@@ -46,7 +46,7 @@ sub EVENT_ITEM {
 		quest::exp(100);
 	}
 	#:: Turn in for 13758 - Black Wolf Skin
-	elsif (plugin::takeItems(13758 => 1)) {
+	elsif (plugin::check_handin(\%itemcount, 13758 => 1)) {
 		quest::say("Ah yes.  This is exactly what I need.  Thank you very much.");
 		#:: Randomly choose Rusty Dagger, Bandages, Copper Band, Spell: Numbing Cold, Worn Great Staff
 		quest::summonitem(quest::ChooseRandom(7007,13009,10004,59964,6012));
@@ -61,5 +61,7 @@ sub EVENT_ITEM {
 		quest::exp(350);
 	}
 	#:: Return unused items
-	plugin::returnUnusedItems();
+	else {
+		plugin::return_items(\%itemcount);
+	}
 }

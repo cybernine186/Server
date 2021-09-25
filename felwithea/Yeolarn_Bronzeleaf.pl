@@ -44,7 +44,7 @@ sub EVENT_SAY {
 
 sub EVENT_ITEM {
 	#:: Turn in for 18780 -  A Tattered Note
-	if (plugin::takeItems(18780 => 1)) {
+	if (plugin::plugin::check_handin(\%itemcount, 18780 => 1)) {
 		quest::say("Welcome, friend, to the Clerics of Tunare. I am Yeolarn Bronzeleaf, head of the guild and devout follower of Tunare. Here is your guild tunic - it will help to protect you against this world's evils. Once you are ready to begin your training please make sure that you see Terren Starwatcher, he can assist you in developing your hunting and gathering skills. Return to me when you have become more experienced in our art, I will be able to further instruct you on how to progress through your early ranks, as well as in some of the various [trades] you will have available to you.");
 		#:: Ding!
 		quest::ding();
@@ -58,7 +58,7 @@ sub EVENT_ITEM {
 		quest::faction(5001,75); 		#:: + Anti-mage
 	}
 	#:: Turn in for 13073 - Bone Chips x4
-	if (plugin::takeItems(13073 => 4)) {
+	if (plugin::plugin::check_handin(\%itemcount, 13073 => 4)) {
 		quest::say("Praise Tunare! I knew you would be victorious. I reward you with this spell, and pray that it will help you in your fight against the unholy forces of Innoruk. When you are ready you will make a fine [Initiate of Tunare].");
 		#:: Ding!
 		quest::ding();
@@ -72,7 +72,7 @@ sub EVENT_ITEM {
 		quest::faction(5001,15); 		#:: + Anti-mage
 	}
 	#:: Turn in for 10199 - Putrescent Heart x4
-	if (plugin::takeItems(10199 => 4)) {
+	if (plugin::plugin::check_handin(\%itemcount, 10199 => 4)) {
 		quest::say("Praise Tunare!! You have done well young Initiate. Here the symbol of your station within our faith. Return to me when you are ready to [slay the necromancer] that has been creating the undead.");
 		#:: Ding!
 		quest::ding();
@@ -86,7 +86,7 @@ sub EVENT_ITEM {
 		quest::faction(5001,15); 		#:: + Anti-mage
 	}
 	#:: Turn in for 1570, 12514, 19065, 12513 -  Initiate Symbol of Tunare, Larik Z`Vole's Head, Teir`Dal Couriers Head, Teir`Dal Crate
-	if (plugin::takeItems(1570 => 1, 12514 => 1, 19065 => 1, 12513 => 1)) {
+	if (plugin::plugin::check_handin(\%itemcount, 1570 => 1, 12514 => 1, 19065 => 1, 12513 => 1)) {
 		quest::say("Praise Tunare! The Mother smiles on you this day Disciple Angelsyn! I present you with the symbol of your new station among the Priests of Tunare. Return to me when you are ready to become a [Warden of Tunare]?");
 		#:: Ding!
 		quest::ding();
@@ -100,7 +100,7 @@ sub EVENT_ITEM {
 		quest::faction(5001,15); 		#:: + Anti-mage
 	}
 	#:: Turn in for 1571, 1599 -  Disciple Symbol of Tunare, Powder of Unanimation
-	if (plugin::takeItems(1571 => 1, 1599 => 1)) {
+	if (plugin::plugin::check_handin(\%itemcount, 1571 => 1, 1599 => 1)) {
 		quest::say("Praise Tunare!! I will have our sorcerers examine this power immediately to see if we can reproduce it in quantities enough to eliminate the undead plague. I award you the rank of Warden of Tunare, the All Mother smiles upon you, $name!");
 		#:: Ding!
 		quest::ding();
@@ -114,5 +114,7 @@ sub EVENT_ITEM {
 		quest::faction(5001,15); 		#:: + Anti-mage
 	}
 	#:: Return unused items
-	plugin::return_items(\%itemcount);
+	else {
+		plugin::return_items(\%itemcount);
+	}
 }

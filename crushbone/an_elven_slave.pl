@@ -34,7 +34,7 @@ sub EVENT_ITEM {
 		}
 	}
 	#:: Match a 20020 - Shackle Key 20
-	elsif (plugin::takeItems(20020 => 1)) {
+	elsif (plugin::check_handin(\%itemcount, 20020 => 1)) {
 		#:: Match Male High Elf
 		if ($npcrace == 5 && $npcgender == 0) {
 			quest::say("Good work!! I shall be on my way.  Farewell my friend!!");
@@ -60,7 +60,7 @@ sub EVENT_ITEM {
 		}
 	}
 	#:: Match a 10351 - Brass Earring
-	elsif (plugin::takeItems(10351 =>1)) {
+	elsif (plugin::check_handin(\%itemcount, 10351 =>1)) {
 		#:: Match Male High Elf
 		if ($npcrace == 5 && $npcgender == 0) {
 			quest::say("You killed the taskmaster?!  Absolutely amazing! The orcs will be fighting among themselves for power now and I can disappear in the commotion. Thanks, friend! Take this for your deeds!");
@@ -111,7 +111,7 @@ sub EVENT_ITEM {
 		}
 	}
 	#:: Match a 20021 - Shackle Key 21
-	if (plugin::takeItems(20021 => 1)) {
+	if (plugin::check_handin(\%itemcount, 20021 => 1)) {
 		#:: Match Female High Elf
 		if ($npcrace == 5 && $npcgender == 1) {
 			quest::say("Good work!! I shall be on my way. Farewell my friend!!");
@@ -137,7 +137,7 @@ sub EVENT_ITEM {
 		}
 	}
 	#:: Match a 20018 - Shackle Key 18
-	if (plugin::takeItems(20018 => 1)) {
+	if (plugin::check_handin(\%itemcount, 20018 => 1)) {
 		#:: Match Male Wood Elf
 		if ($npcrace == 4 && $npcgender == 0) {
 			quest::say("Good work!! I shall be on my way. Farewell my friend!!");
@@ -164,7 +164,7 @@ sub EVENT_ITEM {
 		}
 	}
 	#:: Match a 20019 - Shackle Key 19
-	if (plugin::takeItems(20019 => 1)) {
+	if (plugin::check_handin(\%itemcount, 20019 => 1)) {
 		#:: Match Female Wood Elf
 		if ($npcrace == 4 && $npcgender == 1) {
 			quest::say("Good work!! I shall be on my way. Farewell my friend!!");
@@ -191,7 +191,9 @@ sub EVENT_ITEM {
 		}
 	}
 	#:: Return unused items
-	plugin::returnUnusedItems();
+	else {
+		plugin::return_items(\%itemcount);
+	}
 }
 
 sub EVENT_TIMER {
