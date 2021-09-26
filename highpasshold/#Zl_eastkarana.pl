@@ -5,5 +5,5 @@ sub EVENT_SPAWN {
 }
 
 sub EVENT_ENTER {
-	quest::movepc(15, 105, 830, 5, 157); #Zl_eastkarana
+	quest::movepc(15, -8310, -3070, 694, 115); # Zone: eastkarana
 }

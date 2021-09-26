@@ -5,5 +5,5 @@ sub EVENT_SPAWN {
 }
 
 sub EVENT_ENTER {
-	quest::movepc(407, -8310, -3070, 694, 115); # Zone: highpasshold
+	quest::movepc(407, 105, 830, 5, 157); # Zone: highpasshold
 }
