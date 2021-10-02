@@ -112,6 +112,17 @@ apt-get $apt_options install libsodium-dev
 apt-get $apt_options install libsodium18
 apt-get $apt_options install libjson-perl
 apt-get $apt_options install libssl-dev
+apt-get $apt_options install apache2
+apt-get $apt_options install php
+apt-get $apt_options install php-mbstring
+apt-get $apt_options install php-gettext
+apt-get $apt_options install phpmyadmin
+
+# PHPMyAdmin Install
+phpenmod mbstring
+ln -s -f /etc/phpmyadmin/apache.conf /etc/apache2/conf-available/phpmyadmin.conf
+a2enconf phpmyadmin
+systemctl restart apache2
 
 # Install libsodium
 wget http://ftp.us.debian.org/debian/pool/main/libs/libsodium/libsodium-dev_1.0.11-2_amd64.deb -O /home/eqemu/libsodium-dev.deb
@@ -144,35 +155,37 @@ mysql -uroot -p$eqemu_db_root_password -e "GRANT ALL ON *.* TO '$eqemu_db_userna
 mkdir $eqemu_server_directory/server
 mkdir $eqemu_server_directory/server_build
 mkdir $eqemu_server_directory/server_source
-mkdir $eqemu_server_directory/server/assets
-mkdir $eqemu_server_directory/server/backups
-mkdir $eqemu_server_directory/server/db_update
-mkdir $eqemu_server_directory/server/updates_staged
-mkdir $eqemu_server_directory/server/lua_modules
-mkdir $eqemu_server_directory/server/plugins
-mkdir $eqemu_server_directory/server/bin
-mkdir $eqemu_server_directory/server/import
-mkdir $eqemu_server_directory/server/export
-mkdir $eqemu_server_directory/server/shared
-mkdir $eqemu_server_directory/server/maps
-mkdir $eqemu_server_directory/server/quests
-mkdir $eqemu_server_directory/server/logs
-mkdir $eqemu_server_directory/server/logs/crash
-mkdir $eqemu_server_directory/server/logs/zone
-
 
 #::: Back to server directory
-git clone --recurse-submodules https://github.com/cybernine186/Server.git $eqemu_server_directory/server_source
+git clone --recurse-submodules https://github.com/cybernine186/Server.git $eqemu_server_directory/server
+git clone --recurse-submodules https://github.com/cybernine186/Code.git $eqemu_server_directory/server_source
 git clone --recurse-submodules https://github.com/cybernine186/EQEmuMaps.git $eqemu_server_directory/server/maps
 git clone --recurse-submodules https://github.com/cybernine186/quests.git $eqemu_server_directory/server/quests
+git clone --recurse-submodules https://github.com/cybernine186/peqphpeditor.git $eqemu_server_directory/peqeditor
 
-#::: Map lowercase to uppercase to avoid issues
-ln -s maps Maps
+#::: PEQEditor
+ln -s -f $eqemu_server_directory/peqeditor/apache2/peqeditor.conf /etc/apache2/conf-available/peqeditor.conf
+a2enconf peqeditor
+systemctl restart apache2
 
 #::: Build Server
 cd $eqemu_server_directory/server_build
 cmake $cmake_options -DEQEMU_BUILD_LOGIN=ON -DEQEMU_BUILD_LUA=ON -G "Unix Makefiles" $eqemu_server_directory/server_source
-cd $eqemu_server_directory
+make
+
+#::: Link Server Executables
+ln -s -f $eqemu_server_directory/server/maps $eqemu_server_directory/server/Maps
+ln -s -f $eqemu_server_directory/server_build/bin/eqlaunch $eqemu_server_directory/server/eqlaunch
+ln -s -f $eqemu_server_directory/server_build/bin/export_client_files $eqemu_server_directory/server/export_client_files
+ln -s -f $eqemu_server_directory/server_build/bin/import_client_files $eqemu_server_directory/server/import_client_files
+ln -s -f $eqemu_server_directory/server_build/bin/libcommon.a $eqemu_server_directory/server/libcommon.a
+ln -s -f $eqemu_server_directory/server_build/bin/libluabind.a $eqemu_server_directory/server/libluabind.a
+ln -s -f $eqemu_server_directory/server_build/bin/queryserv $eqemu_server_directory/server/queryserv
+ln -s -f $eqemu_server_directory/server_build/bin/shared_memory $eqemu_server_directory/server/shared_memory
+ln -s -f $eqemu_server_directory/server_build/bin/ucs $eqemu_server_directory/server/ucs
+ln -s -f $eqemu_server_directory/server_build/bin/world $eqemu_server_directory/server/world
+ln -s -f $eqemu_server_directory/server_build/bin/zone $eqemu_server_directory/server/zone
+ln -s -f $eqemu_server_directory/server_build/bin/loginserver $eqemu_server_directory/server/loginserver
 
 #::: Chown files
 chown eqemu:eqemu $eqemu_server_directory/ -R 
