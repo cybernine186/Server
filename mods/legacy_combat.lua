@@ -102,6 +102,10 @@ function CheckHitChance(e)
 	local defender    = self;
 	local chancetohit = BaseHitChance;
 	local chance_mod  = 0;
+	
+	if (other:IsSitting()) then
+		return 100;
+	end
 
 	if (e.opts ~= nil) then
 		chance_mod = e.opts.hit_chance;
