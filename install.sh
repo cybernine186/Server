@@ -162,16 +162,24 @@ git clone --recurse-submodules https://github.com/cybernine186/Code.git $eqemu_s
 git clone --recurse-submodules https://github.com/cybernine186/EQEmuMaps.git $eqemu_server_directory/server/maps
 git clone --recurse-submodules https://github.com/cybernine186/quests.git $eqemu_server_directory/server/quests
 git clone --recurse-submodules https://github.com/cybernine186/peqphpeditor.git $eqemu_server_directory/peqeditor
+git clone --recurse-submodules https://github.com/cybernine186/Client.git $eqemu_server_directory/client
 
 #::: PEQEditor
 ln -s -f $eqemu_server_directory/peqeditor/apache2/peqeditor.conf /etc/apache2/conf-available/peqeditor.conf
 a2enconf peqeditor
 systemctl restart apache2
 
+#::: Client
+ln -s -f $eqemu_server_directory/client/apache2/eqemupatcher_00.conf /etc/apache2/conf-available/eqemupatcher_00.conf
+ln -s -f $eqemu_server_directory/client/apache2/eqemupatcher_01.conf /etc/apache2/conf-available/eqemupatcher_01.conf
+ln -s -f $eqemu_server_directory/client/apache2/eqemupatcher_02.conf /etc/apache2/conf-available/eqemupatcher_02.conf
+a2enconf eqemupatcher_00.conf
+systemctl restart apache2
+
 #::: Build Server
 cd $eqemu_server_directory/server_build
 cmake $cmake_options -DEQEMU_BUILD_LOGIN=ON -DEQEMU_BUILD_LUA=ON -G "Unix Makefiles" $eqemu_server_directory/server_source
-make
+make -j 12
 
 #::: Link Server Executables
 ln -s -f $eqemu_server_directory/server/maps $eqemu_server_directory/server/Maps
