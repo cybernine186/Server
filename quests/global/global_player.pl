@@ -55,21 +55,6 @@ sub EVENT_DISCOVER_ITEM {
 	quest::gmsay("$name discovered " . quest::varlink($itemid) . "!", 335, 1, 0, 0);
 }
 
-sub EVENT_SERVERFIRST_LEVEL {
-	$levelcheck = $client->GetLevel();
-	$classcheck = $client->GetClass();
-	$namecheck = $client->GetCleanName();
-	$guildnamecheck = $client->GuildID();
-	$guildname = quest::getguildnamebyid($guildnamecheck);
-	$cleanclass = quest::getclassname($classcheck);
-	$Racecheck = $client->GetRace();
-	$cleanrace = quest::getracename($Racecheck);
-	
-	if($levelcheck == 5 or $levelcheck == 10 or $levelcheck == 15 or $levelcheck == 20 or $levelcheck == 25 or $levelcheck == 30 or $levelcheck == 35 or $levelcheck == 40 or $levelcheck == 45 or $levelcheck == 50 or $levelcheck == 55 or $levelcheck == 60) {
-		quest::gmsay("[Achievement] Congratulations to $namecheck of <$guildname> for becoming the first level $levelcheck $cleanrace $cleanclass!", 257, 1, 0, 0); 
-	}
-}
-
 sub EVENT_CLICKDOOR {
     if($status > 200) {
         plugin::Doors_Manipulation_EVENT_CLICKDOOR(); # Door Manipulation Plugin
