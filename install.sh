@@ -163,10 +163,16 @@ git clone --recurse-submodules https://github.com/cybernine186/EQEmuMaps.git $eq
 git clone --recurse-submodules https://github.com/cybernine186/quests.git $eqemu_server_directory/server/quests
 git clone --recurse-submodules https://github.com/cybernine186/peqphpeditor.git $eqemu_server_directory/peqeditor
 git clone --recurse-submodules https://github.com/cybernine186/Client.git $eqemu_server_directory/client
+git clone --recurse-submodules https://github.com/cybernine186/EQEmuAllakhazamClone.git $eqemu_server_directory/eqemuallakhazamclone
 
 #::: PEQEditor
 ln -s -f $eqemu_server_directory/peqeditor/apache2/peqeditor.conf /etc/apache2/conf-available/peqeditor.conf
 a2enconf peqeditor
+systemctl restart apache2
+
+#::: EQEmuAllakhazamClone
+ln -s -f /home/eqemu/eqemuallakhazamclone/apache2/eqemuallakhazamclone.conf /etc/apache2/conf-available/eqemuallakhazamclone.conf
+a2enconf eqemuallakhazamclone
 systemctl restart apache2
 
 #::: Client
