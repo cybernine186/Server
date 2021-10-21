@@ -1,13 +1,3 @@
---[[
-    *
-    * The purpose of this lua file is to backport combat formulas pre-overhaul
-    * https://github.com/EQEmu/Server/commit/9e824876ba5dac262b121c0e60d022bb2ecc45bd
-    *
-    * If your server has years and years of content built on old formulas, it may be appropriate to use this
-    * instead of taking on the massive task of rescaling tons of carefully tested and layered content
-    *
-]]
-
 MonkACBonusWeight              = RuleI.Get(Rule.MonkACBonusWeight);
 NPCACFactor                    = RuleR.Get(Rule.NPCACFactor);
 OldACSoftcapRules              = RuleB.Get(Rule.OldACSoftcapRules);
@@ -43,13 +33,6 @@ ArcheryHitPenalty              = RuleR.Get(Rule.ArcheryHitPenalty);
 UseOldDamageIntervalRules      = RuleB.Get(Rule.UseOldDamageIntervalRules);
 CriticalMessageRange           = RuleI.Get(Rule.CriticalDamage);
 
---[[
-    *
-    * These are rule values that were removed in the latest combat overhaul, if you are coming from
-    * older source code, you will need to reference what your rule values were for these variables
-    * to make sure that things line up correctly
-    *
-]]
 
 MeleeBaseCritChance            = 0.0;
 ClientBaseCritChance           = 0.0;
@@ -62,166 +45,225 @@ RogueDeadlyStrikeMod           = 2;
 -- Source Function: Mob::MeleeMitigation()
 -- Partial: Rest happens in DoMeleeMitigation
 function MeleeMitigation(e)
-	e.IgnoreDefault = true;
-
-	if e.hit.damage_done < 0 or e.hit.base_damage == 0 then
+	if (e.self:IsClient() and e.other:IsClient()) then
+		e.IgnoreDefault = true;
 		return e;
 	end
-
-	eq.log_combat(
-			string.format("[%s] [ClientAttack] Damage Table [%i] WeaponDMG [%i]",
-					e.self:GetCleanName(),
-					GetDamageTable(e.other, e.hit.skill),
-					e.hit.base_damage
-			)
-	);
-
-	e.hit.damage_done = 2 * e.hit.base_damage * GetDamageTable(e.other, e.hit.skill) / 100;
-
-	eq.log_combat(
-			string.format("[%s] [ClientAttack] DamageDone [%i] BaseDamage [%i] HitSkill [%i]",
-					e.self:GetCleanName(),
-					e.hit.damage_done,
-					e.hit.base_damage,
-					e.hit.skill
-			)
-	);
-
-	e.hit = DoMeleeMitigation(e.self, e.other, e.hit, e.opts);
-
-	return e;
 end
 
--- Source Function: Mob::CheckHitChance()
+-- Source Function: Mob::MeleeMitigation()
+function DoMeleeMitigation(defender, attacker, hit, opts)
+	if (defender:IsClient() and attacker:IsClient()) then
+		if hit.damage_done <= 0 then
+			return hit;
+		end
+
+		local aabonuses         = defender:GetAABonuses();
+		local itembonuses       = defender:GetItemBonuses();
+		local spellbonuses      = defender:GetSpellBonuses();
+
+		local aa_mit            = (aabonuses:CombatStability() + itembonuses:CombatStability() + spellbonuses:CombatStability()) / 100.0;
+		local softcap           = (defender:GetSkill(15) + defender:GetLevel()) * SoftcapFactor * (1.0 + aa_mit);
+		local mitigation_rating = 0.0;
+		local attack_rating     = 0.0;
+		local shield_ac         = 0;
+		local armor             = 0;
+		local weight            = 0.0;
+		local monkweight        = MonkACBonusWeight;
+
+		eq.log_combat(
+				string.format("[%s] [Mob::MeleeMitigation] Stability Bonuses | AA [%i] Item [%i] Spell [%i]",
+						defender:GetCleanName(),
+						aabonuses:CombatStability(),
+						itembonuses:CombatStability(),
+						spellbonuses:CombatStability()
+				)
+		);
+
+		eq.log_combat(
+				string.format("[%s] [Mob::MeleeMitigation] Soft Cap [%i]",
+						defender:GetCleanName(),
+						softcap
+				)
+		);
+
+		if defender:IsClient() then
+			armor, shield_ac = GetRawACNoShield(defender);
+			weight           = defender:CastToClient():CalcCurrentWeight() / 10;
+		elseif defender:IsNPC() then
+			armor            = defender:CastToNPC():GetRawAC();
+			local PetACBonus = 0;
+
+			if not defender:IsPet() then
+				armor = armor / NPCACFactor;
+			end
+
+			local owner = Mob();
+			if defender:IsPet() then
+				owner = defender:GetOwner();
+			elseif defender:CastToNPC():GetSwarmOwner() ~= 0 then
+				local entity_list = eq.get_entity_list();
+				owner             = entity_list:GetMobID(defender:CastToNPC():GetSwarmOwner());
+			end
+
+			if owner.valid then
+				PetACBonus = owner:GetAABonuses():PetMeleeMitigation() + owner:GetItemBonuses():PetMeleeMitigation() + owner:GetSpellBonuses():PetMeleeMitigation();
+			end
+
+			armor = armor + defender:GetSpellBonuses():AC() + defender:GetItemBonuses():AC() + PetACBonus + 1;
+		end
+
+		if (opts ~= nil) then
+			armor = armor * (1.0 - opts.armor_pen_percent);
+			armor = armor - opts.armor_pen_flat;
+		end
+
+		local defender_class = defender:GetClass();
+		if OldACSoftcapRules then
+			if defender_class == Class.WIZARD or defender_class == Class.MAGICIAN or defender_class == Class.NECROMANCER or defender_class == Class.ENCHANTER then
+				softcap = ClothACSoftcap;
+			elseif defender_class == Class.MONK and weight <= monkweight then
+				softcap = MonkACSoftcap;
+			elseif defender_class == Class.DRUID or defender_class == Class.BEASTLORD or defender_class == Class.MONK then
+				softcap = LeatherACSoftcap;
+			elseif defender_class == Class.SHAMAN or defender_class == Class.ROGUE or defender_class == Class.BERSERKER or defender_class == Class.RANGER then
+				softcap = ChainACSoftcap;
+			else
+				softcap = PlateACSoftcap;
+			end
+		end
+
+		softcap = softcap + shield_ac;
+		armor   = armor + shield_ac;
+
+		if OldACSoftcapRules then
+			softcap = softcap + (softcap * (aa_mit * AAMitigationACFactor));
+		end
+
+		if armor > softcap then
+			local softcap_armor = armor - softcap;
+			if OldACSoftcapRules then
+				if defender_class == Class.WARRIOR then
+					softcap_armor = softcap_armor * WarriorACSoftcapReturn;
+				elseif defender_class == Class.SHADOWKNIGHT or defender_class == Class.PALADIN or (defender_class == Class.MONK and weight <= monkweight) then
+					softcap_armor = softcap_armor * KnightACSoftcapReturn;
+				elseif defender_class == Class.CLERIC or defender_class == Class.BARD or defender_class == Class.BERSERKER or defender_class == Class.ROGUE or defender_class == Class.SHAMAN or defender_class == Class.MONK then
+					softcap_armor = softcap_armor * LowPlateChainACSoftcapReturn;
+				elseif defender_class == Class.RANGER or defender_class == Class.BEASTLORD then
+					softcap_armor = softcap_armor * LowChainLeatherACSoftcapReturn;
+				elseif defender_class == Class.WIZARD or defender_class == Class.MAGICIAN or defender_class == Class.NECROMANCER or defender_class == Class.ENCHANTER or defender_class == Class.DRUID then
+					softcap_armor = softcap_armor * CasterACSoftcapReturn;
+				else
+					softcap_armor = softcap_armor * MiscACSoftcapReturn;
+				end
+			else
+				if defender_class == Class.WARRIOR then
+					softcap_armor = softcap_armor * WarACSoftcapReturn;
+				elseif defender_class == Class.PALADIN or defender_class == Class.SHADOWKNIGHT then
+					softcap_armor = softcap_armor * PalShdACSoftcapReturn;
+				elseif defender_class == Class.CLERIC or defender_class == Class.RANGER or defender_class == Class.MONK or defender_class == Class.BARD then
+					softcap_armor = softcap_armor * ClrRngMnkBrdACSoftcapReturn;
+				elseif defender_class == Class.DRUID or defender_class == Class.NECROMANCER or defender_class == Class.WIZARD or defender_class == Class.ENCHANTER or defender_class == Class.MAGICIAN then
+					softcap_armor = softcap_armor * DruNecWizEncMagACSoftcapReturn;
+				elseif defender_class == Class.ROGUE or defender_class == Class.SHAMAN or defender_class == Class.BEASTLORD or defender_class == Class.BERSERKER then
+					softcap_armor = softcap_armor * RogShmBstBerACSoftcapReturn;
+				else
+					softcap_armor = softcap_armor * MiscACSoftcapReturn;
+				end
+			end
+
+			armor = softcap + softcap_armor;
+		end
+
+		local mitigation_rating;
+		if defender_class == Class.WIZARD or defender_class == Class.MAGICIAN or defender_class == Class.NECROMANCER or defender_class == Class.ENCHANTER then
+			mitigation_rating = ((defender:GetSkill(Skill.Defense) + defender:GetItemBonuses():HeroicAGI() / 10) / 4.0) + armor + 1;
+		else
+			mitigation_rating = ((defender:GetSkill(Skill.Defense) + defender:GetItemBonuses():HeroicAGI() / 10) / 3.0) + (armor * 1.333333) + 1;
+		end
+
+		mitigation_rating = mitigation_rating * 0.847;
+
+		local attack_rating;
+		if attacker:IsClient() then
+			attack_rating = (attacker:CastToClient():CalcATK() + ((attacker:GetSTR() - 66) * 0.9) + (attacker:GetSkill(Skill.Offense) * 1.345));
+		else
+			attack_rating = (attacker:GetATK() + (attacker:GetSkill(Skill.Offense) * 1.345) + ((attacker:GetSTR() - 66) * 0.9));
+		end
+
+		eq.log_combat(
+				string.format("[%s] [Mob::MeleeMitigation] Attack Rating [%02f] Mitigation Rating [%02f] Damage [%i]",
+						defender:GetCleanName(),
+						attack_rating,
+						mitigation_rating,
+						hit.damage_done
+				)
+		);
+
+		hit.damage_done = hit.damage_done;
+
+		if hit.damage_done < 0 then
+			hit.damage_done = 0;
+		end
+
+		eq.log_combat(
+				string.format("[%s] [Mob::MeleeMitigation] Final Damage [%i]",
+						defender:GetCleanName(),
+						hit.damage_done
+				)
+		);
+
+		return hit;
+	end
+end
+
 function CheckHitChance(e)
+	local other       = e.self;
+	local self        = e.other;
+	local attacker    = self;
+	local defender    = other;
+	local owner    = Mob();
+	e.IgnoreDefault   = true;
+	if (self:IsClient() and other:IsClient()) then
+		return CheckHitChancePvP(e);
+	end
+	if (other:IsClient() and attacker:IsPet()) then
+	owner = attacker:GetOwner();
+	end
+	if (owner.valid and owner:IsClient()) then
+		return CheckHitChancePvPPet(e);
+	end
+	-- PvE and EvE checkhitchance logic here
+end
+
+function CheckHitChancePvPPet(e)
+	local chancetohit = BaseHitChance;
+	local defender    = other;
+	local attacker    = self;
+	local owner       = Mob();
+	local other = e.self;
+	local self = e.other;
+	local hitBonus       = 0;
 	e.IgnoreDefault   = true;
 
-	local other       = e.other;
-	local attacker    = other;
-	local self        = e.self;
-	local defender    = self;
-	local chancetohit = BaseHitChance;
-	local chance_mod  = 0;
-
-	if (e.opts ~= nil) then
-		chance_mod = e.opts.hit_chance;
+	if (self:IsPet()) then
+		chancetohit = 60;
 	end
 
-	if (attacker:IsNPC() and not attacker:IsPet()) then
-		chancetohit = chancetohit + NPCBonusHitChance;
+	if (other:CastToClient():IsSitting()) then
+		chancetohit = 100;
 	end
 
-	local pvpmode = false;
-	if (self:IsClient() and other:IsClient()) then
-		pvpmode = true;
-	end
+	local tohit_roll = Random.Real(0, 100);
 
-	if (chance_mod >= 10000) then
-		e.ReturnValue = true;
-		return e;
-	end
-
-	local avoidanceBonus = 0;
-	local hitBonus       = 0;
-
-	local attacker_level = attacker:GetLevel();
-	if (attacker_level < 1) then
-		attacker_level = 1;
-	end
-
-	local defender_level = defender:GetLevel();
-	if (defender_level < 1) then
-		defender_level = 1;
-	end
-
-	local level_difference = attacker_level - defender_level;
-	local range            = defender_level;
-	range                  = ((range / 4) + 3);
-
-	if (level_difference < 0) then
-		if (level_difference >= -range) then
-			chancetohit = chancetohit + ((level_difference / range) * HitFalloffMinor);
-		elseif (level_difference >= -(range + 3.0)) then
-			chancetohit = chancetohit - HitFalloffMinor;
-			chancetohit = chancetohit + (((level_difference + range) / 3.0) * HitFalloffModerate);
-		else
-			chancetohit = chancetohit - (HitFalloffMinor + HitFalloffModerate);
-			chancetohit = chancetohit + (((level_difference + range + 3.0) / 12.0) * HitFalloffMajor);
-		end
-	else
-		chancetohit = chancetohit + (HitBonusPerLevel * level_difference);
-	end
-
-	chancetohit = chancetohit - (defender:GetAGI() * AgiHitFactor);
-
-	if (attacker:IsClient()) then
-		chancetohit = chancetohit - (WeaponSkillFalloff * (attacker:CastToClient():MaxSkill(e.hit.skill) - attacker:GetSkill(e.hit.skill)));
-	end
-
-	if (defender:IsClient()) then
-		chancetohit = chancetohit + (WeaponSkillFalloff * (defender:CastToClient():MaxSkill(Skill.Defense) - defender:GetSkill(Skill.Defense)));
-	end
-
-	local attacker_spellbonuses = attacker:GetSpellBonuses();
-	local attacker_itembonuses  = attacker:GetItemBonuses();
-	local attacker_aabonuses    = attacker:GetAABonuses();
-	local defender_spellbonuses = defender:GetSpellBonuses();
-	local defender_itembonuses  = defender:GetItemBonuses();
-	local defender_aabonuses    = defender:GetAABonuses();
-
-	if (attacker_spellbonuses:MeleeSkillCheckSkill() == e.hit.skill or attacker_spellbonuses:MeleeSkillCheckSkill() == 255) then
-		chancetohit = chancetohit + attacker_spellbonuses:MeleeSkillCheck();
-	end
-
-	if (attacker_itembonuses:MeleeSkillCheckSkill() == e.hit.skill or attacker_itembonuses:MeleeSkillCheckSkill() == 255) then
-		chancetohit = chancetohit + attacker_itembonuses:MeleeSkillCheck();
-	end
-
-	avoidanceBonus = defender_spellbonuses:AvoidMeleeChanceEffect() +
-			defender_itembonuses:AvoidMeleeChanceEffect() +
-			defender_aabonuses:AvoidMeleeChanceEffect() +
-			(defender_itembonuses:AvoidMeleeChance() / 10.0);
-
-	local owner    = Mob();
-	if (defender:IsPet()) then
-		owner = defender:GetOwner();
-	elseif (defender:IsNPC() and defender:CastToNPC():GetSwarmOwner()) then
-		local entity_list = eq.get_entity_list();
-		owner             = entity_list:GetMobID(defender:CastToNPC():GetSwarmOwner());
-	end
-
-	if (owner.valid) then
-		avoidanceBonus = avoidanceBonus + owner:GetAABonuses():PetAvoidance() + owner:GetSpellBonuses():PetAvoidance() + owner:GetItemBonuses():PetAvoidance();
-	end
-
-	if (defender:IsNPC()) then
-		avoidanceBonus = avoidanceBonus + (defender:CastToNPC():GetAvoidanceRating() / 10.0);
-	end
-
-	hitBonus = hitBonus + attacker_itembonuses:HitChanceEffect(e.hit.skill) +
-			attacker_spellbonuses:HitChanceEffect(e.hit.skill) +
-			attacker_aabonuses:HitChanceEffect(e.hit.skill) +
-			attacker_itembonuses:HitChanceEffect(Skill.HIGHEST_SKILL + 1) +
-			attacker_spellbonuses:HitChanceEffect(Skill.HIGHEST_SKILL + 1) +
-			attacker_aabonuses:HitChanceEffect(Skill.HIGHEST_SKILL + 1);
-
-	hitBonus = hitBonus + (attacker_itembonuses:Accuracy(Skill.HIGHEST_SKILL + 1) +
-			attacker_spellbonuses:Accuracy(Skill.HIGHEST_SKILL + 1) +
-			attacker_aabonuses:Accuracy(Skill.HIGHEST_SKILL + 1) +
-			attacker_aabonuses:Accuracy(e.hit.skill) +
-			attacker_itembonuses:HitChance()) / 15.0;
-
-	hitBonus = hitBonus + chance_mod;
-
-	if (attacker:IsNPC()) then
-		hitBonus = hitBonus + (attacker:CastToNPC():GetAccuracyRating() / 10.0);
-	end
-
-	if (e.hit.skill == Skill.Archery) then
-		hitBonus = hitBonus - (hitBonus * ArcheryHitPenalty);
-	end
-
-	chancetohit = chancetohit + ((chancetohit * (hitBonus - avoidanceBonus)) / 100.0);
+	eq.log_combat(
+			string.format("[%s] [CheckHitChancePvPPet] Chance [%i] ToHitRoll [%i] Hit? [%s]",
+					e.self:GetCleanName(),
+					chancetohit,
+					tohit_roll,
+					(tohit_roll <= chancetohit) and "true" or "false"
+			)
+	);
 
 	if (chancetohit > 1000 or chancetohit < -1000) then
 	elseif (chancetohit > 95) then
@@ -230,10 +272,86 @@ function CheckHitChance(e)
 		chancetohit = 5;
 	end
 
+	if (tohit_roll <= chancetohit) then
+		e.ReturnValue = true;
+	else
+		e.ReturnValue = false;
+	end
+	return e;
+end
+
+function CheckHitChancePvP(e)
+	local chancetohit = BaseHitChance;
+	local defender    = other;
+	local attacker    = self;
+	local other = e.self;
+	local self = e.other;
+	local hitBonus       = 0;
+	local agi = other:CastToClient():GetAGI();
+	local dex = self:CastToClient():GetDEX();
+	local atk = self:CastToClient():GetATK();
+	e.IgnoreDefault   = true;
+
+	--Agi hardcap, agility does not help above 185.
+	if (agi > 185) then
+		agi = 185;
+	end
+
+	--Dex hardcap, dexterity does not help hit rate above 225.
+	if (dex > 225) then
+		dex = 225;
+	end
+
+	--Pure Melee PvP Hit chance
+	if ((self:GetClass() == Class.WARRIOR or self:GetClass() == Class.ROGUE or self:GetClass() == Class.RANGER or self:GetClass() == Class.MONK) and self:GetLevel() <= 25) then
+		chancetohit = 75 + ((self:CastToClient():GetSkill(e.hit.skill)) / 10) + (dex /10) - (agi /10)  - ((other:CastToClient():GetSkill(Skill.Defense)) / 10);
+	elseif ((self:GetClass() == Class.WARRIOR or self:GetClass() == Class.ROGUE or self:GetClass() == Class.RANGER or self:GetClass() == Class.MONK) and self:GetLevel() <= 35) then
+		chancetohit = 65 + ((self:CastToClient():GetSkill(e.hit.skill)) / 10) + (dex /10) - (agi /10) - ((other:CastToClient():GetSkill(Skill.Defense)) / 10);
+	elseif ((self:GetClass() == Class.WARRIOR or self:GetClass() == Class.ROGUE or self:GetClass() == Class.RANGER or self:GetClass() == Class.MONK) and self:GetLevel() <= 60) then
+		chancetohit = 65 + ((self:CastToClient():GetSkill(e.hit.skill)) / 10) + (dex /10) - (agi /10) - ((other:CastToClient():GetSkill(Skill.Defense)) / 10);
+	end
+
+	--Hybrid and Bard PvP Hit chance
+	if ((self:GetClass() == Class.SHADOWKNIGHT or self:GetClass() == Class.PALADIN or self:GetClass() == Class.BARD) and self:GetLevel() <= 25) then
+		chancetohit = 65 + ((self:CastToClient():GetSkill(e.hit.skill)) / 10) + (dex /10) - (agi /10)  - ((other:CastToClient():GetSkill(Skill.Defense)) / 10);
+	elseif ((self:GetClass() == Class.SHADOWKNIGHT or self:GetClass() == Class.PALADIN or self:GetClass() == Class.BARD) and self:GetLevel() <= 35) then
+		chancetohit = 55 + ((self:CastToClient():GetSkill(e.hit.skill)) / 10) + (dex /10) - (agi /10) - ((other:CastToClient():GetSkill(Skill.Defense)) / 10);
+	elseif ((self:GetClass() == Class.SHADOWKNIGHT or self:GetClass() == Class.PALADIN or self:GetClass() == Class.BARD) and self:GetLevel() <= 60) then
+		chancetohit = 55 + ((self:CastToClient():GetSkill(e.hit.skill)) / 10) + (dex /10) - (agi /10) - ((other:CastToClient():GetSkill(Skill.Defense)) / 10);
+	end
+
+	--Priests hit chance
+	if ((self:GetClass() == Class.CLERIC or self:GetClass() == Class.SHAMAN or self:GetClass() == Class.DRUID) and self:GetLevel() <= 25) then
+		chancetohit = 55 + ((self:CastToClient():GetSkill(e.hit.skill)) / 10) + (dex /10) - (agi /10)  - ((other:CastToClient():GetSkill(Skill.Defense)) / 10);
+	elseif ((self:GetClass() == Class.CLERIC or self:GetClass() == Class.SHAMAN or self:GetClass() == Class.DRUID) and self:GetLevel() <= 35) then
+		chancetohit = 45 + ((self:CastToClient():GetSkill(e.hit.skill)) / 10) + (dex /10) - (agi /10) - ((other:CastToClient():GetSkill(Skill.Defense)) / 10);
+	elseif ((self:GetClass() == Class.CLERIC or self:GetClass() == Class.SHAMAN or self:GetClass() == Class.DRUID) and self:GetLevel() <= 60) then
+		chancetohit = 45 + ((self:CastToClient():GetSkill(e.hit.skill)) / 10) + (dex /10) - (agi /10) - ((other:CastToClient():GetSkill(Skill.Defense)) / 10);
+	end
+
+	--Int Caster PvP Hit chance
+	if ((self:GetClass() == Class.MAGICIAN or self:GetClass() == Class.NECROMANCER or self:GetClass() == Class.ENCHANTER or self:GetClass() == Class.WIZARD) and self:GetLevel() <= 25) then
+		chancetohit = 45 + ((self:CastToClient():GetSkill(e.hit.skill)) / 10) + (dex /10) - (agi /10)  - ((other:CastToClient():GetSkill(Skill.Defense)) / 10);
+	elseif ((self:GetClass() == Class.MAGICIAN or self:GetClass() == Class.NECROMANCER or self:GetClass() == Class.ENCHANTER or self:GetClass() == Class.WIZARD) and self:GetLevel() <= 35) then
+		chancetohit = 35 + ((self:CastToClient():GetSkill(e.hit.skill)) / 10) + (dex /10) - (agi /10) - ((other:CastToClient():GetSkill(Skill.Defense)) / 10);
+	elseif ((self:GetClass() == Class.MAGICIAN or self:GetClass() == Class.NECROMANCER or self:GetClass() == Class.ENCHANTER or self:GetClass() == Class.WIZARD) and self:GetLevel() <= 60) then
+		chancetohit = 35 + ((self:CastToClient():GetSkill(e.hit.skill)) / 10) + (dex /10) - (agi /10) - ((other:CastToClient():GetSkill(Skill.Defense)) / 10);
+	end
+
+	chancetohit = chancetohit + (atk /30);
+
 	local tohit_roll = Random.Real(0, 100);
 
+	if (self:FindBuff(4505) or self:FindBuff(4501) or self:FindBuff(4672)) then
+		chancetohit = chancetohit + 20;
+	end
+
+	if (other:FindBuff(4503) or other:FindBuff(4670) or other:FindBuff(4515) or other:FindBuff(4515)) then
+		chancetohit = chancetohit - 25;
+	end
+
 	eq.log_combat(
-			string.format("[%s] [Mob::CheckHitChance] Chance [%i] ToHitRoll [%i] Hit? [%s]",
+			string.format("[%s] [CheckHitChancePvP] Chance [%i] ToHitRoll [%i] Hit? [%s]",
 					e.self:GetCleanName(),
 					chancetohit,
 					tohit_roll,
@@ -241,12 +359,27 @@ function CheckHitChance(e)
 			)
 	);
 
+	if (chancetohit > 1000 or chancetohit < -1000) then
+		elseif (chancetohit > 95) then
+		chancetohit = 95;
+		elseif (chancetohit < 5) then
+			chancetohit = 5;
+	end
+
+	if (other:FindBuff(4502)) then
+		chancetohit = chancetohit - 1000;
+	end
+
+	--If a player is sitting in PvP they will be hit 100% of the time.
+	if (other:CastToClient():IsSitting()) then
+		chancetohit = 100;
+	end
+
 	if (tohit_roll <= chancetohit) then
 		e.ReturnValue = true;
 	else
 		e.ReturnValue = false;
 	end
-
 	return e;
 end
 
@@ -559,390 +692,9 @@ function GetCrippBlowChance(self)
 	return crip_chance;
 end
 
--- Source Function: Mob::MeleeMitigation()
-function DoMeleeMitigation(defender, attacker, hit, opts)
-	if hit.damage_done <= 0 then
-		return hit;
-	end
-
-	local aabonuses         = defender:GetAABonuses();
-	local itembonuses       = defender:GetItemBonuses();
-	local spellbonuses      = defender:GetSpellBonuses();
-
-	local aa_mit            = (aabonuses:CombatStability() + itembonuses:CombatStability() + spellbonuses:CombatStability()) / 100.0;
-	local softcap           = (defender:GetSkill(15) + defender:GetLevel()) * SoftcapFactor * (1.0 + aa_mit);
-	local mitigation_rating = 0.0;
-	local attack_rating     = 0.0;
-	local shield_ac         = 0;
-	local armor             = 0;
-	local weight            = 0.0;
-	local monkweight        = MonkACBonusWeight;
-
-	eq.log_combat(
-			string.format("[%s] [Mob::MeleeMitigation] Stability Bonuses | AA [%i] Item [%i] Spell [%i]",
-					defender:GetCleanName(),
-					aabonuses:CombatStability(),
-					itembonuses:CombatStability(),
-					spellbonuses:CombatStability()
-			)
-	);
-
-	eq.log_combat(
-			string.format("[%s] [Mob::MeleeMitigation] Soft Cap [%i]",
-					defender:GetCleanName(),
-					softcap
-			)
-	);
-
-	if defender:IsClient() then
-		armor, shield_ac = GetRawACNoShield(defender);
-		weight           = defender:CastToClient():CalcCurrentWeight() / 10;
-	elseif defender:IsNPC() then
-		armor            = defender:CastToNPC():GetRawAC();
-		local PetACBonus = 0;
-
-		if not defender:IsPet() then
-			armor = armor / NPCACFactor;
-		end
-
-		local owner = Mob();
-		if defender:IsPet() then
-			owner = defender:GetOwner();
-		elseif defender:CastToNPC():GetSwarmOwner() ~= 0 then
-			local entity_list = eq.get_entity_list();
-			owner             = entity_list:GetMobID(defender:CastToNPC():GetSwarmOwner());
-		end
-
-		if owner.valid then
-			PetACBonus = owner:GetAABonuses():PetMeleeMitigation() + owner:GetItemBonuses():PetMeleeMitigation() + owner:GetSpellBonuses():PetMeleeMitigation();
-		end
-
-		armor = armor + defender:GetSpellBonuses():AC() + defender:GetItemBonuses():AC() + PetACBonus + 1;
-	end
-
-	if (opts ~= nil) then
-		armor = armor * (1.0 - opts.armor_pen_percent);
-		armor = armor - opts.armor_pen_flat;
-	end
-
-	local defender_class = defender:GetClass();
-	if OldACSoftcapRules then
-		if defender_class == Class.WIZARD or defender_class == Class.MAGICIAN or defender_class == Class.NECROMANCER or defender_class == Class.ENCHANTER then
-			softcap = ClothACSoftcap;
-		elseif defender_class == Class.MONK and weight <= monkweight then
-			softcap = MonkACSoftcap;
-		elseif defender_class == Class.DRUID or defender_class == Class.BEASTLORD or defender_class == Class.MONK then
-			softcap = LeatherACSoftcap;
-		elseif defender_class == Class.SHAMAN or defender_class == Class.ROGUE or defender_class == Class.BERSERKER or defender_class == Class.RANGER then
-			softcap = ChainACSoftcap;
-		else
-			softcap = PlateACSoftcap;
-		end
-	end
-
-	softcap = softcap + shield_ac;
-	armor   = armor + shield_ac;
-
-	if OldACSoftcapRules then
-		softcap = softcap + (softcap * (aa_mit * AAMitigationACFactor));
-	end
-
-	if armor > softcap then
-		local softcap_armor = armor - softcap;
-		if OldACSoftcapRules then
-			if defender_class == Class.WARRIOR then
-				softcap_armor = softcap_armor * WarriorACSoftcapReturn;
-			elseif defender_class == Class.SHADOWKNIGHT or defender_class == Class.PALADIN or (defender_class == Class.MONK and weight <= monkweight) then
-				softcap_armor = softcap_armor * KnightACSoftcapReturn;
-			elseif defender_class == Class.CLERIC or defender_class == Class.BARD or defender_class == Class.BERSERKER or defender_class == Class.ROGUE or defender_class == Class.SHAMAN or defender_class == Class.MONK then
-				softcap_armor = softcap_armor * LowPlateChainACSoftcapReturn;
-			elseif defender_class == Class.RANGER or defender_class == Class.BEASTLORD then
-				softcap_armor = softcap_armor * LowChainLeatherACSoftcapReturn;
-			elseif defender_class == Class.WIZARD or defender_class == Class.MAGICIAN or defender_class == Class.NECROMANCER or defender_class == Class.ENCHANTER or defender_class == Class.DRUID then
-				softcap_armor = softcap_armor * CasterACSoftcapReturn;
-			else
-				softcap_armor = softcap_armor * MiscACSoftcapReturn;
-			end
-		else
-			if defender_class == Class.WARRIOR then
-				softcap_armor = softcap_armor * WarACSoftcapReturn;
-			elseif defender_class == Class.PALADIN or defender_class == Class.SHADOWKNIGHT then
-				softcap_armor = softcap_armor * PalShdACSoftcapReturn;
-			elseif defender_class == Class.CLERIC or defender_class == Class.RANGER or defender_class == Class.MONK or defender_class == Class.BARD then
-				softcap_armor = softcap_armor * ClrRngMnkBrdACSoftcapReturn;
-			elseif defender_class == Class.DRUID or defender_class == Class.NECROMANCER or defender_class == Class.WIZARD or defender_class == Class.ENCHANTER or defender_class == Class.MAGICIAN then
-				softcap_armor = softcap_armor * DruNecWizEncMagACSoftcapReturn;
-			elseif defender_class == Class.ROGUE or defender_class == Class.SHAMAN or defender_class == Class.BEASTLORD or defender_class == Class.BERSERKER then
-				softcap_armor = softcap_armor * RogShmBstBerACSoftcapReturn;
-			else
-				softcap_armor = softcap_armor * MiscACSoftcapReturn;
-			end
-		end
-
-		armor = softcap + softcap_armor;
-	end
-
-	local mitigation_rating;
-	if defender_class == Class.WIZARD or defender_class == Class.MAGICIAN or defender_class == Class.NECROMANCER or defender_class == Class.ENCHANTER then
-		mitigation_rating = ((defender:GetSkill(Skill.Defense) + defender:GetItemBonuses():HeroicAGI() / 10) / 4.0) + armor + 1;
-	else
-		mitigation_rating = ((defender:GetSkill(Skill.Defense) + defender:GetItemBonuses():HeroicAGI() / 10) / 3.0) + (armor * 1.333333) + 1;
-	end
-
-	mitigation_rating = mitigation_rating * 0.847;
-
-	local attack_rating;
-	if attacker:IsClient() then
-		attack_rating = (attacker:CastToClient():CalcATK() + ((attacker:GetSTR() - 66) * 0.9) + (attacker:GetSkill(Skill.Offense) * 1.345));
-	else
-		attack_rating = (attacker:GetATK() + (attacker:GetSkill(Skill.Offense) * 1.345) + ((attacker:GetSTR() - 66) * 0.9));
-	end
-
-	eq.log_combat(
-			string.format("[%s] [Mob::MeleeMitigation] Attack Rating [%02f] Mitigation Rating [%02f] Damage [%i]",
-					defender:GetCleanName(),
-					attack_rating,
-					mitigation_rating,
-					hit.damage_done
-			)
-	);
-
-	hit.damage_done = GetMeleeMitDmg(defender, attacker, hit.damage_done, hit.min_damage, mitigation_rating, attack_rating);
-
-	if hit.damage_done < 0 then
-		hit.damage_done = 0;
-	end
-
-	eq.log_combat(
-			string.format("[%s] [Mob::MeleeMitigation] Final Damage [%i]",
-					defender:GetCleanName(),
-					hit.damage_done
-			)
-	);
-
-	return hit;
-end
-
--- Source Function: N/A
-function GetMeleeMitDmg(defender, attacker, damage, min_damage, mitigation_rating, attack_rating)
-	if defender:IsClient() then
-		return ClientGetMeleeMitDmg(defender, attacker, damage, min_damage, mitigation_rating, attack_rating);
-	else
-		return MobGetMeleeMitDmg(defender, attacker, damage, min_damage, mitigation_rating, attack_rating);
-	end
-end
-
--- Source Function: Client::GetMeleeMitDmg()
-function ClientGetMeleeMitDmg(defender, attacker, damage, min_damage, mitigation_rating, attack_rating)
-	if (not attacker:IsNPC() or UseOldDamageIntervalRules) then
-		return MobGetMeleeMitDmg(defender, attacker, damage, min_damage, mitigation_rating, attack_rating);
-	end
-
-	local d             = 10;
-	local dmg_interval  = (damage - min_damage) / 19.0;
-	local dmg_bonus     = min_damage - dmg_interval;
-	local spellMeleeMit = (defender:GetSpellBonuses():MeleeMitigationEffect() + defender:GetItemBonuses():MeleeMitigationEffect() + defender:GetAABonuses():MeleeMitigationEffect()) / 100.0;
-	if (defender:GetClass() == Class.WARRIOR) then
-		spellMeleeMit = spellMeleeMit - 0.05;
-	end
-
-	dmg_bonus      = dmg_bonus - (dmg_bonus * (defender:GetItemBonuses():MeleeMitigation() / 100.0));
-	dmg_interval   = dmg_interval + (dmg_interval * spellMeleeMit);
-
-	local mit_roll = Random.Real(0, mitigation_rating);
-	local atk_roll = Random.Real(0, attack_rating);
-
-	if (atk_roll > mit_roll) then
-		local a_diff   = atk_roll - mit_roll;
-		local thac0    = attack_rating * ACthac0Factor;
-		local thac0cap = attacker:GetLevel() * 9 + 20;
-		if (thac0 > thac0cap) then
-			thac0 = thac0cap;
-		end
-
-		d = d + (10 * (a_diff / thac0));
-	elseif (mit_roll > atk_roll) then
-		local m_diff    = mit_roll - atk_roll;
-		local thac20    = mitigation_rating * ACthac20Factor;
-		local thac20cap = defender:GetLevel() * 9 + 20;
-		if (thac20 > thac20cap) then
-			thac20 = thac20cap;
-		end
-
-		d = d - (10 * (m_diff / thac20));
-	end
-
-	if (d < 1) then
-		d = 1;
-	elseif (d > 20) then
-		d = 20;
-	end
-
-	return math.floor(dmg_bonus + dmg_interval * d);
-end
-
--- Source Function: Mob::GetMeleeMitDmg()
-function MobGetMeleeMitDmg(defender, attacker, damage, min_damage, mitigation_rating, attack_rating)
-	local d        = 10.0;
-	local mit_roll = Random.Real(0, mitigation_rating);
-	local atk_roll = Random.Real(0, attack_rating);
-
-	eq.log_combat(
-			string.format("[%s] [Mob::GetMeleeMitDmg] MitigationRoll [%02f] AtkRoll [%02f]",
-					defender:GetCleanName(),
-					mit_roll,
-					atk_roll
-			)
-	);
-
-	if (atk_roll > mit_roll) then
-		local a_diff   = atk_roll - mit_roll;
-		local thac0    = attack_rating * ACthac0Factor;
-		local thac0cap = attacker:GetLevel() * 9 + 20;
-		if (thac0 > thac0cap) then
-			thac0 = thac0cap;
-		end
-
-		d = d - (10.0 * (a_diff / thac0));
-	elseif (mit_roll > atk_roll) then
-		local m_diff    = mit_roll - atk_roll;
-		local thac20    = mitigation_rating * ACthac20Factor;
-		local thac20cap = defender:GetLevel() * 9 + 20;
-		if (thac20 > thac20cap) then
-			thac20 = thac20cap;
-		end
-
-		d = d + (10.0 * (m_diff / thac20));
-	end
-
-	if (d < 0.0) then
-		d = 0.0;
-	elseif (d > 20.0) then
-		d = 20.0;
-	end
-
-	local interval = (damage - min_damage) / 20.0;
-
-	eq.log_combat(
-			string.format("[%s] [Mob::GetMeleeMitDmg] Interval [%02f] d [%02f]",
-					defender:GetCleanName(),
-					interval,
-					d
-			)
-	);
-
-	damage = damage - (math.floor(d) * interval);
-
-	eq.log_combat(
-			string.format("[%s] [Mob::GetMeleeMitDmg] Damage [%02f] Post Interval",
-					defender:GetCleanName(),
-					damage
-			)
-	);
-
-	damage = damage - (min_damage * defender:GetItemBonuses():MeleeMitigation() / 100);
-
-	eq.log_combat(
-			string.format("[%s] [Mob::GetMeleeMitDmg] Damage [%02f] Mitigation [%i] Post Mitigation MinDmg",
-					defender:GetCleanName(),
-					damage,
-					defender:GetItemBonuses():MeleeMitigation()
-			)
-	);
-
-	-- Changed from positive to negative per original
-	damage = damage - (damage * (defender:GetSpellBonuses():MeleeMitigationEffect() + defender:GetItemBonuses():MeleeMitigationEffect() + defender:GetAABonuses():MeleeMitigationEffect()) / 100);
-
-	eq.log_combat(
-			string.format("[%s] [Mob::GetMeleeMitDmg] Damage [%02f] SpellMit [%i] ItemMit [%i] AAMit [%i] Post All Mit Bonuses",
-					defender:GetCleanName(),
-					damage,
-					defender:GetSpellBonuses():MeleeMitigationEffect(),
-					defender:GetItemBonuses():MeleeMitigationEffect(),
-					defender:GetAABonuses():MeleeMitigationEffect()
-			)
-	);
-
-	return damage;
-end
-
--- Source Function: Client::GetRawACNoShield()
-function GetRawACNoShield(self)
-	self            = self:CastToClient();
-
-	local ac        = self:GetItemBonuses():AC() + self:GetSpellBonuses():AC() + self:GetAABonuses():AC();
-	local shield_ac = 0;
-	local inst      = self:GetInventory():GetItem(Slot.Secondary);
-
-	if inst.valid then
-		if inst:GetItem():ItemType() == 8 then
-			shield_ac = inst:GetItem():AC();
-
-			for i = 1, 6 do
-				local augment = inst:GetAugment(i - 1);
-				if augment.valid then
-					shield_ac = shield_ac + augment:GetItem():AC();
-				end
-			end
-		end
-	end
-
-	ac = ac - shield_ac;
-
-	eq.log_combat(
-			string.format("[%s] [Client::GetRawACNoShield] AC [%i] ItemAC [%i] SpellAC [%i] AAAC [%i]",
-					self:GetCleanName(),
-					ac,
-					self:GetItemBonuses():AC(),
-					self:GetSpellBonuses():AC(),
-					self:GetAABonuses():AC()
-			)
-	);
-
-	return ac, shield_ac;
-end
-
 -- Source Function: Mob::GetDamageTable()
 function GetDamageTable(attacker, skill)
-	if not attacker:IsClient() then
-		return 100;
-	end
-
-	if attacker:GetLevel() <= 51 then
-		local ret_table   = 0;
-		local str_over_75 = 0;
-		if attacker:GetSTR() > 75 then
-			str_over_75 = attacker:GetSTR() - 75;
-		end
-
-		if str_over_75 > 255 then
-			ret_table = (attacker:GetSkill(skill) + 255) / 2;
-		else
-			ret_table = (attacker:GetSkill(skill) + str_over_75) / 2;
-		end
-
-		if ret_table < 100 then
-			return 100;
-		end
-
-		return ret_table;
-	elseif attacker:GetLevel() >= 90 then
-		if attacker:GetClass() == 7 then
-			return 379;
-		else
-			return 345;
-		end
-	else
-		local dmg_table = { 275, 275, 275, 275, 275, 280, 280, 280, 280, 285, 285, 285, 290, 290, 295, 295, 300, 300, 300, 305, 305, 305, 310, 310, 315, 315, 320, 320, 320, 325, 325, 325, 330, 330, 335, 335, 340, 340, 340 };
-
-		if attacker:GetClass() == 7 then
-			local monkDamageTableBonus = 20;
-			return (dmg_table[attacker:GetLevel() - 50] * (100 + monkDamageTableBonus) / 100);
-		else
-			return dmg_table[attacker:GetLevel() - 50];
-		end
-	end
-	return 100;
+	return e;
 end
 
 -- Source Function: N/A - Not used
@@ -951,50 +703,1032 @@ function ApplyDamageTable(e)
 	return e;
 end
 
--- Source Function: Mob::CommonOutgoingHitSuccess()
 function CommonOutgoingHitSuccess(e)
-	e = ApplyMeleeDamageBonus(e);
 
 	eq.log_combat(
-			string.format("[%s] [Mob::CommonOutgoingHitSuccess] Dmg [%i] Post ApplyMeleeDamageBonus",
-					e.self:GetCleanName(),
-					e.hit.damage_done
-			)
+		string.format("[%s] [Mob::CommonOutgoingHitSuccess] Dmg [%i] SkillDmgTaken [%i] SkillDmgtAmt [%i] FcDmgAmtIncoming [%i] Post DmgCalcs",
+				e.self:GetCleanName(),
+				e.hit.damage_done,
+				e.other:GetSkillDmgTaken(e.hit.skill),
+				e.self:GetSkillDmgAmt(e.hit.skill),
+				e.other:GetFcDamageAmtIncoming(e.self, 0, true, e.hit.skill)
+		)
 	);
 
-	e.hit.damage_done = e.hit.damage_done + (e.hit.damage_done * e.other:GetSkillDmgTaken(e.hit.skill) / 100) + (e.self:GetSkillDmgAmt(e.hit.skill) + e.other:GetFcDamageAmtIncoming(e.self, 0, true, e.hit.skill));
+	--kick and bash damage for NPCS
+	if (e.self:IsNPC() or e.self:IsPet()) then
+		if (e.hit.skill == 30 or e.hit.skill == 10) then
+			mitigationac = e.other:GetAC() / 10;
+			if (e.self:GetLevel() < 11) then
+				bashdmg = Random.Real(1, 7);
+				finaldmg = bashdmg - mitigationac;
+				if finaldmg < 1 then
+					finaldmg = 1;
+				end
 
-	eq.log_combat(
-			string.format("[%s] [Mob::CommonOutgoingHitSuccess] Dmg [%i] SkillDmgTaken [%i] SkillDmgtAmt [%i] FcDmgAmtIncoming [%i] Post DmgCalcs",
-					e.self:GetCleanName(),
-					e.hit.damage_done,
-					e.other:GetSkillDmgTaken(e.hit.skill),
-					e.self:GetSkillDmgAmt(e.hit.skill),
-					e.other:GetFcDamageAmtIncoming(e.self, 0, true, e.hit.skill)
-			)
-	);
+				e.hit.damage_done = finaldmg;
+				e.IgnoreDefault = true;
+				if (e.other:IsClient() and e.other:CastToClient():IsSitting()) then
+					maxkick = 7;
+					e.hit.damage_done = maxkick;
+				end
+				e = TryCriticalHit(e);
+				return e;
+			elseif (e.self:GetLevel() < 21) then
+				bashdmg = Random.Real(7, 15);
+				finaldmg = bashdmg - mitigationac;
+				if finaldmg < 1 then
+					finaldmg = 1;
+				end
 
-	e = TryCriticalHit(e);
-	e.self:CheckNumHitsRemaining(5, -1, 65535);
-	e.IgnoreDefault = true;
-	return e;
-end
+				e.hit.damage_done = finaldmg;
+				e.IgnoreDefault = true;
+				if (e.other:IsClient() and e.other:CastToClient():IsSitting()) then
+					maxkick = 15;
+					e.hit.damage_done = maxkick;
+				end
+				e = TryCriticalHit(e);
+				return e;
+			elseif (e.self:GetLevel() > 21) then
+				bashdmg = Random.Real(7, 27);
+				finaldmg = bashdmg - mitigationac;
+				if finaldmg < 1 then
+					finaldmg = 1;
+				end
 
--- Source Function: Mob::ApplyMeleeDamageBonus()
-function ApplyMeleeDamageBonus(e)
-	local dmgbonusmod = e.self:GetMeleeDamageMod_SE(e.hit.skill);
-	if (opts) then
-		dmgbonusmod = dmgbonusmod + e.opts.melee_damage_bonus_flat;
+				e.hit.damage_done = finaldmg;
+				e.IgnoreDefault = true;
+				if (e.other:IsClient() and e.other:CastToClient():IsSitting()) then
+					maxkick = 27;
+					e.hit.damage_done = maxkick;
+				end
+				e = TryCriticalHit(e);
+				return e;
+			end
+		end
 	end
 
-	eq.log_combat(
-			string.format("[%s] [Mob::ApplyMeleeDamageBonus] DmgBonusMod [%i] Dmg [%i]",
-					e.self:GetCleanName(),
-					dmgbonusmod,
-					e.hit.damage_done
-			)
-	);
+	--Client to NPC damage.
+	if (e.self:IsClient() and e.other:IsNPC()) then
+		if (e.hit.skill == 30 or e.hit.skill == 10) then
+			mitigationac = e.other:GetAC() / 10;
+			if (e.self:GetLevel() < 11) then
+				bashdmg = Random.Real(1, 7);
+				e.hit.damage_done = bashdmg - mitigationac;
+				e.IgnoreDefault = true;
+				if (e.other:IsClient() and e.other:CastToClient():IsSitting()) then
+					maxkick = 7;
+					e.hit.damage_done = maxkick;
+				end
+				e = TryCriticalHit(e);
+				return e;
+			elseif (e.self:GetLevel() < 21) then
+				bashdmg = Random.Real(7, 15);
+				e.hit.damage_done = bashdmg - mitigationac;
+				e.IgnoreDefault = true;
+				if (e.other:IsClient() and e.other:CastToClient():IsSitting()) then
+					maxkick = 15;
+					e.hit.damage_done = maxkick;
+				end
+				e = TryCriticalHit(e);
+				return e;
+			elseif (e.self:GetLevel() > 21) then
+				bashdmg = Random.Real(7, 27);
+				e.hit.damage_done = bashdmg - mitigationac;
+				e.IgnoreDefault = true;
+				if (e.other:IsClient() and e.other:CastToClient():IsSitting()) then
+					maxkick = 27;
+					e.hit.damage_done = maxkick;
+				end
+				e = TryCriticalHit(e);
+				return e;
+			end
+		end
 
-	e.hit.damage_done = e.hit.damage_done + (e.hit.damage_done * dmgbonusmod / 100);
+		self = e.self:CastToClient();
+		other = e.other:CastToNPC();
+
+		self_weapon = self:GetInventory():GetItem(Slot.Primary);
+		off_hand = self:GetInventory():GetItem(Slot.Secondary);
+		self_bow = self:GetInventory():GetItem(Slot.Range);
+		self_ammo = self:GetInventory():GetItem(Slot.Ammo);
+		boots = self:GetInventory():GetItem(Slot.Feet);
+		bootsac = boots:GetItem():AC();
+		rangedweapondamage = self_bow:GetItem():Damage()
+		ammoweapondamage = self_ammo:GetItem():Damage()
+		weapondamage = self_weapon:GetItem():Damage()
+		offweapondamage = off_hand:GetItem():Damage()
+		weaponatk = (self_weapon:GetItem():Attack() /10 )
+		strbonus = (self:GetSTR() /12);
+		dexbonus = (self:GetDEX() /12);
+		playeratkbonus = (self:GetATK() /15);
+		defenderac = (e.other:GetAC());
+		mitigationac = (defenderac / 10);
+		offensivemod = ((self:GetSkill(Skill.Offense) + self:GetSTR()) / 100);
+		if (offensivemod < 2) then
+			offensivemod = 2;
+		end
+
+		--delay and bonus
+		wepdelay = self_weapon:GetItem():Delay()
+		if (self:GetClass() == Class.WARRIOR or self:GetClass() == Class.ROGUE or self:GetClass() == Class.RANGER or self:GetClass() == Class.MONK or self:GetClass() == Class.SHADOWKNIGHT or self:GetClass() == Class.PALADIN or self:GetClass() == Class.BARD) then
+			BasicBonus = ((self:GetLevel() - 25) / 3);
+		else
+			BasicBonus = 0;
+		end
+		itemtype = self_weapon:GetItem():ItemType()
+		itemtypeoffhand = off_hand:GetItem():ItemType()
+	
+		--Str Bonus Cap
+		if (self:GetLevel() < 11) then
+			strbonus = (self:GetSTR() /40)
+		elseif (self:GetLevel() > 11 and self:GetLevel() <= 21) then
+			strbonus = (self:GetSTR() /25)
+		elseif (self:GetLevel() > 21 and self:GetLevel() <= 60) then
+			strbonus = (self:GetSTR() /14)
+		end
+	
+		--Dex Bonus Cap
+		if (self:GetLevel() < 11) then
+			dexbonus = (self:GetDEX() /40)
+		elseif (self:GetLevel() > 11 and self:GetLevel() <= 21) then
+			dexbonus = (self:GetDEX() /25)
+		elseif (self:GetLevel() > 21 and self:GetLevel() <= 60) then
+			dexbonus = (self:GetDEX() /14)
+		end
+	
+		--Weapondamage Caps
+		if (self:GetLevel() < 11) then
+			if (weapondamage > 10) then
+				weapondamage = 10;
+			end
+		elseif (self:GetLevel() < 19) then
+			if (weapondamage > 14) then
+				weapondamage = 14;
+			end
+		elseif (self:GetLevel() < 29) then
+			if (weapondamage > 30) then
+				weapondamage = 30;
+			end
+		end
+	
+	
+		--Backstab Damage
+		if e.hit.skill == 8 then
+			if self:GetSTR() > 200 then
+				bstabstr = (((self:GetSTR() - 200) / 5) + 200);
+			else
+				bstabstr = self:GetSTR();
+			end
+			defenderac = defenderac ;
+			attackmod = self:GetATK() / 5;
+			backstabmod = 2 + (self:GetSkill(Skill.Backstab) * 0.02 );
+			backstabmin = (((weapondamage * backstabmod) * bstabstr) / 100) + attackmod;
+			backstabmax = (((self:GetSkill(Skill.Offense) + bstabstr) * (weapondamage * backstabmod)) / 70); 
+			backstabdamage = Random.Real(backstabmin, backstabmax);
+			e.hit.damage_done = backstabdamage - defenderac;
+
+			if (other:CastToClient():IsSitting()) then
+				e.hit.damage_done = backstabmax - defenderac;
+			end
+
+			if (self:FindBuff(4676)) then
+				e.hit.damage_done = e.hit.damage_done * 2;
+			end
+		end
+	
+		--throwing damage
+		if e.hit.skill == 51 then
+			bowmindmg = 1;
+			bowmaxdmg = (rangedweapondamage * offensivemod)  - mitigationac;
+			local damage_roll = Random.Real(bowmindmg, bowmaxdmg);
+			local attack_roll = Random.Real(0, (playeratkbonus));
+			local dex_roll = Random.Real(0, (dexbonus));
+			final_damage = damage_roll + attack_roll + dex_roll;
+			if (self:GetLevel() < 11) then
+				if (final_damage > 20) then
+					final_damage = 20;
+				end
+			end
+			e.hit.damage_done = final_damage;
+
+			if (self:FindBuff(4676)) then
+				e.hit.damage_done = e.hit.damage_done * 2;
+			end
+			if (self:FindBuff(4675)) then
+				e.hit.damage_done = e.hit.damage_done * 2;
+			end
+			if (self:FindBuff(4512)) then
+				e.hit.damage_done = e.hit.damage_done * 2;
+			end
+			if (self:FindBuff(4498)) then
+				e.hit.damage_done = e.hit.damage_done * 1.35;
+			end
+
+		end
+	
+		--bow damage
+		if e.hit.skill == 7 then
+			bowmindmg = 1;
+			bowmaxdmg = ((rangedweapondamage + ammoweapondamage) * offensivemod)  - mitigationac;
+			local damage_roll = Random.Real(bowmindmg, bowmaxdmg);
+			local attack_roll = Random.Real(0, (playeratkbonus));
+			local dex_roll = Random.Real(0, (dexbonus));
+			final_damage = damage_roll + attack_roll + dex_roll;
+			if (self:GetLevel() < 11) then
+				if (final_damage > 20) then
+					final_damage = 20;
+				end
+			end
+			e.hit.damage_done = final_damage;
+
+			--damage discs
+			if (self:FindBuff(4676)) then
+				e.hit.damage_done = e.hit.damage_done * 2;
+			end
+			if (self:FindBuff(4675)) then
+				e.hit.damage_done = e.hit.damage_done * 2;
+			end
+			if (self:FindBuff(4512)) then
+				e.hit.damage_done = e.hit.damage_done * 2;
+			end
+			if (self:FindBuff(4498)) then
+				e.hit.damage_done = e.hit.damage_done * 1.35;
+			end
+			if (self:FindBuff(4506)) then
+				e.hit.damage_done = e.hit.damage_done * 2.05;
+			end
+			
+		end
+	
+		--flying kick damage
+		if e.hit.skill == 26 then
+			flyingmindmg = 50 + bootsac;
+			flyingmaxdmg = flyingmindmg + (self:GetSkill(Skill.FlyingKick) / 2);
+			flyingdmg = Random.Real(flyingmindmg, flyingmaxdmg);
+			e.hit.damage_done = flyingdmg - mitigationac;
+
+			--damage discs
+			if (self:FindBuff(4676)) then
+				e.hit.damage_done = e.hit.damage_done * 2;
+			end
+			if (self:FindBuff(4675)) then
+				e.hit.damage_done = e.hit.damage_done * 2;
+			end
+			if (self:FindBuff(4512)) then
+				e.hit.damage_done = e.hit.damage_done * 2;
+			end
+			if (self:FindBuff(4498)) then
+				e.hit.damage_done = e.hit.damage_done * 1.35;
+			end
+			
+		end
+			
+		--kick and bash damage
+		if e.hit.skill == 30 or e.hit.skill == 10 then
+			if (self:CastToClient():GetSkill(Skill.Bash) <= 1 and e.hit.skill == 10) then
+			bashdmg = 1;
+			finaldmg = bashdmg - mitigationac;
+			if finaldmg < 1 then
+				finaldmg = 1;
+			end
+			e.hit.damage_done = finaldmg;
+			e.IgnoreDefault = true;
+			elseif (self:GetLevel() < 11) then
+				bashdmg = Random.Real(1, 7);
+				e.hit.damage_done = bashdmg - mitigationac;
+
+				--damage discs
+				if (self:FindBuff(4676)) then
+					e.hit.damage_done = e.hit.damage_done * 2;
+				end
+				if (self:FindBuff(4675)) then
+					e.hit.damage_done = e.hit.damage_done * 2;
+				end
+				if (self:FindBuff(4512)) then
+					e.hit.damage_done = e.hit.damage_done * 2;
+				end
+				if (self:FindBuff(4498)) then
+					e.hit.damage_done = e.hit.damage_done * 1.35;
+				end
+				
+			elseif (self:GetLevel() < 21) then
+				bashdmg = Random.Real(7, 15);
+				finaldmg = bashdmg - mitigationac;
+				if finaldmg < 1 then
+					finaldmg = 1;
+				end
+
+				e.hit.damage_done = finaldmg;
+
+				--damage discs
+				if (self:FindBuff(4676)) then
+					e.hit.damage_done = e.hit.damage_done * 2;
+				end
+				if (self:FindBuff(4675)) then
+					e.hit.damage_done = e.hit.damage_done * 2;
+				end
+				if (self:FindBuff(4512)) then
+					e.hit.damage_done = e.hit.damage_done * 2;
+				end
+				if (self:FindBuff(4498)) then
+					e.hit.damage_done = e.hit.damage_done * 1.35;
+				end
+				
+			elseif (self:GetLevel() > 21) then
+				bashdmg = Random.Real(7, 27);
+				finaldmg = bashdmg - mitigationac;
+				if finaldmg < 1 then
+					finaldmg = 1;
+				end
+
+				e.hit.damage_done = finaldmg;
+				--damage discs
+				if (self:FindBuff(4676)) then
+					e.hit.damage_done = e.hit.damage_done * 2;
+				end
+				if (self:FindBuff(4675)) then
+					e.hit.damage_done = e.hit.damage_done * 2;
+				end
+				if (self:FindBuff(4512)) then
+					e.hit.damage_done = e.hit.damage_done * 2;
+				end
+				if (self:FindBuff(4498)) then
+					e.hit.damage_done = e.hit.damage_done * 1.35;
+				end
+				
+			end
+		end
+	
+	
+		--Solves issue where BasicBonus is negative at lower levels lowering minimum damage.
+		if BasicBonus < 0 then
+			BasicBonus = 0;
+		end
+	
+		--2h bonus calcs
+		if (wepdelay <= 27) then
+			dmg_bonus = BasicBonus + 1;
+		elseif (wepdelay <= 59) then
+			dmg_bonus = (BasicBonus * 2) + 1;
+		elseif (wepdelay >= 70) then
+			dmg_bonus = (BasicBonus * 3) + 1;
+		end
+	
+		--Monk hand to hand damage
+		if e.hit.skill == 28 and self:GetClass() == Class.MONK then
+			if self:GetLevel() <= 4 then
+				weapondamage = 4;
+			elseif self:GetLevel() > 4 and self:GetLevel() <= 9 then
+				weapondamage = 5;
+			elseif self:GetLevel() > 9 and self:GetLevel() <= 14 then
+				weapondamage = 6;
+			elseif self:GetLevel() > 14 and self:GetLevel() <= 19 then
+				weapondamage = 7;
+			elseif self:GetLevel() > 19 and self:GetLevel() <= 24 then
+				weapondamage = 8;
+			elseif self:GetLevel() > 24 and self:GetLevel() <= 29 then
+				weapondamage = 9;
+			elseif self:GetLevel() > 29 and self:GetLevel() <= 34 then
+				weapondamage = 10;
+			elseif self:GetLevel() > 34 and self:GetLevel() <= 39 then
+				weapondamage = 11;
+			elseif self:GetLevel() > 39 and self:GetLevel() <= 44 then
+				weapondamage = 12;
+			elseif self:GetLevel() > 45 and self:GetLevel() <= 49 then
+				weapondamage = 13;
+			elseif self:GetLevel() > 49 and self:GetLevel() <= 60 then
+				weapondamage = 14;
+			end
+		end
+
+		if e.hit.skill == 0 or e.hit.skill == 1 or e.hit.skill == 28 or (e.hit.skill == 36 and itemtype ~= 35) then --1her
+			minimumdamage = 1;
+			maximumdamage = ((weapondamage * offensivemod) + dmg_bonus)  - mitigationac;
+
+			local damage_roll = Random.Real(minimumdamage, maximumdamage);
+			local attack_roll = Random.Real(0, playeratkbonus);
+			local str_roll = Random.Real(0, strbonus);
+			final_damage = damage_roll + attack_roll + str_roll;
+			if (self:GetLevel() < 11) then
+				if (final_damage > 20) then
+					final_damage = 20;
+				end
+			end
+			final_damage = final_damage;
+
+			if final_damage < 1 then
+				final_damage = 1;
+			end
+			e.hit.damage_done = final_damage;
+			
+			--damage discs
+			if (self:FindBuff(4676)) then
+				e.hit.damage_done = e.hit.damage_done * 2;
+			end
+			if (self:FindBuff(4675)) then
+				e.hit.damage_done = e.hit.damage_done * 2;
+			end
+			if (self:FindBuff(4512)) then
+				e.hit.damage_done = e.hit.damage_done * 2;
+			end
+			if (self:FindBuff(4498)) then
+				e.hit.damage_done = e.hit.damage_done * 1.35;
+			end
+			
+			--mitigation discs
+			if (other:FindBuff(4510)) then
+				e.hit.damage_done = e.hit.damage_done * .40;
+			end
+			if (other:FindBuff(4499)) then
+				e.hit.damage_done = e.hit.damage_done * .65;
+			end
+			if (other:FindBuff(4498)) then
+				e.hit.damage_done = e.hit.damage_done * 1.35;
+			end
+		end
+
+
+		if e.hit.skill == 2 or e.hit.skill == 3 or (e.hit.skill == 36 and itemtype == 35) then --2her
+			minimumdamage = 1;
+			maximumdamage = ((weapondamage * offensivemod) + dmg_bonus)  - mitigationac;
+			local damage_roll = Random.Real(minimumdamage, maximumdamage);
+			local attack_roll = Random.Real(0, (playeratkbonus));
+			local str_roll = Random.Real(0, (strbonus));
+			final_damage = damage_roll + attack_roll + str_roll;
+
+			if (self:GetLevel() < 11) then
+				if (final_damage > 20) then
+					final_damage = 20;
+				end
+			end
+			final_damage = final_damage;
+			if final_damage < 1 then
+				final_damage = 1;
+			end
+			e.hit.damage_done = final_damage;
+			
+		
+			--damage discs
+			if (self:FindBuff(4676)) then
+				e.hit.damage_done = e.hit.damage_done * 2;
+			end
+			if (self:FindBuff(4675)) then
+				e.hit.damage_done = e.hit.damage_done * 2;
+			end
+			if (self:FindBuff(4512)) then
+				e.hit.damage_done = e.hit.damage_done * 2;
+			end
+			if (self:FindBuff(4498)) then
+				e.hit.damage_done = e.hit.damage_done * 1.35;
+			end
+			
+			--mitigation discs
+			if (other:FindBuff(4510)) then
+				e.hit.damage_done = e.hit.damage_done * .40;
+			end
+			if (other:FindBuff(4499)) then
+				e.hit.damage_done = e.hit.damage_done * .65;
+			end
+			if (other:FindBuff(4498)) then
+				e.hit.damage_done = e.hit.damage_done * 1.35;
+			end
+		end
+	e = TryCriticalHit(e);
+	e.IgnoreDefault = true;
 	return e;
+	end
+
+	--Client to Client Melee Damage
+	if (e.self:IsClient() and e.other:IsClient()) then
+		self = e.self:CastToClient();
+		other = e.other:CastToClient();
+
+		self_weapon = self:GetInventory():GetItem(Slot.Primary);
+		off_hand = self:GetInventory():GetItem(Slot.Secondary);
+		self_bow = self:GetInventory():GetItem(Slot.Range);
+		self_ammo = self:GetInventory():GetItem(Slot.Ammo);
+		boots = self:GetInventory():GetItem(Slot.Feet);
+		bootsac = boots:GetItem():AC();
+		rangedweapondamage = self_bow:GetItem():Damage()
+		ammoweapondamage = self_ammo:GetItem():Damage()
+		weapondamage = self_weapon:GetItem():Damage()
+		offweapondamage = off_hand:GetItem():Damage()
+		weaponatk = (self_weapon:GetItem():Attack() /10 )
+		strbonus = (self:GetSTR() /12);
+		dexbonus = (self:GetDEX() /12);
+		playeratkbonus = (self:GetATK() /15);
+		defenderac = (e.other:GetDisplayAC());
+		mitigationac = (defenderac / 75);
+		offensivemod = ((self:GetSkill(Skill.Offense) + self:GetSTR()) / 100);
+
+		--delay and bonus
+		wepdelay = self_weapon:GetItem():Delay()
+		if (self:GetClass() == Class.WARRIOR or self:GetClass() == Class.ROGUE or self:GetClass() == Class.RANGER or self:GetClass() == Class.MONK or self:GetClass() == Class.SHADOWKNIGHT or self:GetClass() == Class.PALADIN or self:GetClass() == Class.BARD) then
+			BasicBonus = ((self:GetLevel() - 25) / 3);
+		else
+			BasicBonus = 0;
+		end
+		itemtype = self_weapon:GetItem():ItemType()
+		itemtypeoffhand = off_hand:GetItem():ItemType()
+	
+		--Str Bonus Cap
+		if (self:GetLevel() < 11) then
+			strbonus = (self:GetSTR() /40)
+		elseif (self:GetLevel() > 11 and self:GetLevel() <= 21) then
+			strbonus = (self:GetSTR() /25)
+		elseif (self:GetLevel() > 21 and self:GetLevel() <= 60) then
+			strbonus = (self:GetSTR() /14)
+		end
+	
+		--Dex Bonus Cap
+		if (self:GetLevel() < 11) then
+			dexbonus = (self:GetDEX() /40)
+		elseif (self:GetLevel() > 11 and self:GetLevel() <= 21) then
+			dexbonus = (self:GetDEX() /25)
+		elseif (self:GetLevel() > 21 and self:GetLevel() <= 60) then
+			dexbonus = (self:GetDEX() /14)
+		end
+	
+		--AC scaling by level (avoids twinking)
+		if (self:GetLevel() < 11) then
+			if (mitigationac > 2) then
+				mitigationac = 2;
+			end
+		elseif (self:GetLevel() < 19) then
+			if (mitigationac > 4) then
+				mitigationac = 4;
+			end
+		elseif (self:GetLevel() < 29) then
+			if (mitigationac > 6) then
+				mitigationac = 6;
+			end
+		end
+	
+		--Weapondamage Caps
+		if (self:GetLevel() < 11) then
+			if (weapondamage > 10) then
+				weapondamage = 10;
+			end
+		elseif (self:GetLevel() < 19) then
+			if (weapondamage > 14) then
+				weapondamage = 14;
+			end
+		elseif (self:GetLevel() < 29) then
+			if (weapondamage > 30) then
+				weapondamage = 30;
+			end
+		end
+	
+	
+		--Backstab Damage
+		if e.hit.skill == 8 then
+			if self:GetSTR() > 200 then
+				bstabstr = (((self:GetSTR() - 200) / 5) + 200);
+			else
+				bstabstr = self:GetSTR();
+			end
+			attackmod = self:GetATK() / 5;
+			backstabmod = 2 + (self:GetSkill(Skill.Backstab) * 0.02 );
+			backstabmin = (((weapondamage * backstabmod) * bstabstr) / 100) + attackmod;
+			backstabmax = (((self:GetSkill(Skill.Offense) + bstabstr) * (weapondamage * backstabmod)) / 70); 
+			backstabdamage = Random.Real(backstabmin, backstabmax);
+
+			backstabac = defenderac / 75;
+			e.hit.damage_done = backstabdamage - backstabac;
+
+			if (other:CastToClient():IsSitting()) then
+				e.hit.damage_done = backstabmax - backstabac;
+			end
+
+			if (self:FindBuff(4676)) then
+				e.hit.damage_done = e.hit.damage_done * 2;
+			end
+
+			if (other:FindBuff(4510)) then
+				e.hit.damage_done = e.hit.damage_done * .40;
+			end
+
+			if (other:FindBuff(4499)) then
+				e.hit.damage_done = e.hit.damage_done * .65;
+			end
+
+			if (other:FindBuff(4498)) then
+				e.hit.damage_done = e.hit.damage_done * 1.35;
+			end
+		end
+	
+		--throwing damage
+		if e.hit.skill == 51 then
+			bowmindmg = 1;
+			bowmaxdmg = (rangedweapondamage * offensivemod)  - mitigationac;
+			local damage_roll = Random.Real(bowmindmg, bowmaxdmg);
+			local attack_roll = Random.Real(0, (playeratkbonus));
+			local dex_roll = Random.Real(0, (dexbonus));
+			final_damage = damage_roll + attack_roll + dex_roll;
+			if (self:GetLevel() < 11) then
+				if (final_damage > 20) then
+					final_damage = 20;
+				end
+			end
+			e.hit.damage_done = final_damage;
+
+			if (other:CastToClient():IsSitting()) then
+				e.hit.damage_done = bowmaxdmg;
+			end
+
+			if (self:FindBuff(4676)) then
+				e.hit.damage_done = e.hit.damage_done * 2;
+			end
+			if (self:FindBuff(4675)) then
+				e.hit.damage_done = e.hit.damage_done * 2;
+			end
+			if (self:FindBuff(4512)) then
+				e.hit.damage_done = e.hit.damage_done * 2;
+			end
+			if (self:FindBuff(4498)) then
+				e.hit.damage_done = e.hit.damage_done * 1.35;
+			end
+
+
+			if (other:FindBuff(4510)) then
+				e.hit.damage_done = e.hit.damage_done * .40;
+			end
+
+			if (other:FindBuff(4499)) then
+				e.hit.damage_done = e.hit.damage_done * .65;
+			end
+
+			if (other:FindBuff(4498)) then
+				e.hit.damage_done = e.hit.damage_done * 1.35;
+			end
+		end
+	
+		--bow damage
+		if e.hit.skill == 7 then
+			bowmindmg = 1;
+			bowmaxdmg = ((rangedweapondamage + ammoweapondamage) * offensivemod)  - mitigationac;
+			local damage_roll = Random.Real(bowmindmg, bowmaxdmg);
+			local attack_roll = Random.Real(0, (playeratkbonus));
+			local dex_roll = Random.Real(0, (dexbonus));
+			final_damage = damage_roll + attack_roll + dex_roll;
+
+			if (self:GetLevel() < 11) then
+				if (final_damage > 20) then
+					final_damage = 20;
+				end
+			end
+			e.hit.damage_done = final_damage;
+			if (other:CastToClient():IsSitting()) then
+				e.hit.damage_done = bowmaxdmg;
+			end
+
+			--damage discs
+			if (self:FindBuff(4676)) then
+				e.hit.damage_done = e.hit.damage_done * 2;
+			end
+			if (self:FindBuff(4675)) then
+				e.hit.damage_done = e.hit.damage_done * 2;
+			end
+			if (self:FindBuff(4512)) then
+				e.hit.damage_done = e.hit.damage_done * 2;
+			end
+			if (self:FindBuff(4498)) then
+				e.hit.damage_done = e.hit.damage_done * 1.35;
+			end
+			if (self:FindBuff(4506)) then
+				e.hit.damage_done = e.hit.damage_done * 2.05;
+			end
+			
+			--mitigation discs
+			if (other:FindBuff(4510)) then
+				e.hit.damage_done = e.hit.damage_done * .40;
+			end
+			if (other:FindBuff(4499)) then
+				e.hit.damage_done = e.hit.damage_done * .65;
+			end
+			if (other:FindBuff(4498)) then
+				e.hit.damage_done = e.hit.damage_done * 1.35;
+			end
+		end
+	
+		--flying kick damage
+		if e.hit.skill == 26 then
+			flyingmindmg = 50 + bootsac;
+			flyingmaxdmg = flyingmindmg + (self:GetSkill(Skill.FlyingKick) / 2);
+			flyingdmg = Random.Real(flyingmindmg, flyingmaxdmg);
+			e.hit.damage_done = flyingdmg - mitigationac;
+
+			if (other:CastToClient():IsSitting()) then
+				e.hit.damage_done = flyingmaxdmg;
+			end
+
+			--damage discs
+			if (self:FindBuff(4676)) then
+				e.hit.damage_done = e.hit.damage_done * 2;
+			end
+			if (self:FindBuff(4675)) then
+				e.hit.damage_done = e.hit.damage_done * 2;
+			end
+			if (self:FindBuff(4512)) then
+				e.hit.damage_done = e.hit.damage_done * 2;
+			end
+			if (self:FindBuff(4498)) then
+				e.hit.damage_done = e.hit.damage_done * 1.35;
+			end
+			
+			--mitigation discs
+			if (other:FindBuff(4510)) then
+				e.hit.damage_done = e.hit.damage_done * .40;
+			end
+			if (other:FindBuff(4499)) then
+				e.hit.damage_done = e.hit.damage_done * .65;
+			end
+			if (other:FindBuff(4498)) then
+				e.hit.damage_done = e.hit.damage_done * 1.35;
+			end
+		end
+			
+		--kick and bash damage
+		if e.hit.skill == 30 or e.hit.skill == 10 then
+			if (self:CastToClient():GetSkill(Skill.Bash) <= 1 and e.hit.skill == 10) then
+			bashdmg = 1;
+			finaldmg = bashdmg - mitigationac;
+			if finaldmg < 1 then
+				finaldmg = 1;
+			end
+			e.hit.damage_done = finaldmg;
+			e.IgnoreDefault = true;
+			if (other:CastToClient():IsSitting()) then
+				maxkick = 1;
+				e.hit.damage_done = maxkick;
+			end
+			elseif (self:GetLevel() < 11) then
+				bashdmg = Random.Real(1, 7);
+				
+				finaldmg = bashdmg - mitigationac;
+				if finaldmg < 1 then
+					finaldmg = 1;
+				end
+
+				e.hit.damage_done = finaldmg;
+
+				if (other:CastToClient():IsSitting()) then
+					maxkick = 7;
+					e.hit.damage_done = maxkick;
+				end
+
+				--damage discs
+				if (self:FindBuff(4676)) then
+					e.hit.damage_done = e.hit.damage_done * 2;
+				end
+				if (self:FindBuff(4675)) then
+					e.hit.damage_done = e.hit.damage_done * 2;
+				end
+				if (self:FindBuff(4512)) then
+					e.hit.damage_done = e.hit.damage_done * 2;
+				end
+				if (self:FindBuff(4498)) then
+					e.hit.damage_done = e.hit.damage_done * 1.35;
+				end
+				
+				--mitigation discs
+				if (other:FindBuff(4510)) then
+					e.hit.damage_done = e.hit.damage_done * .40;
+				end
+				if (other:FindBuff(4499)) then
+					e.hit.damage_done = e.hit.damage_done * .65;
+				end
+				if (other:FindBuff(4498)) then
+					e.hit.damage_done = e.hit.damage_done * 1.35;
+				end
+			elseif (self:GetLevel() < 21) then
+				bashdmg = Random.Real(7, 15);
+				
+				finaldmg = bashdmg - mitigationac;
+				if finaldmg < 1 then
+					finaldmg = 1;
+				end
+
+				e.hit.damage_done = finaldmg;
+
+				if (other:CastToClient():IsSitting()) then
+					maxkick = 15;
+					e.hit.damage_done = maxkick;
+				end
+
+				--damage discs
+				if (self:FindBuff(4676)) then
+					e.hit.damage_done = e.hit.damage_done * 2;
+				end
+				if (self:FindBuff(4675)) then
+					e.hit.damage_done = e.hit.damage_done * 2;
+				end
+				if (self:FindBuff(4512)) then
+					e.hit.damage_done = e.hit.damage_done * 2;
+				end
+				if (self:FindBuff(4498)) then
+					e.hit.damage_done = e.hit.damage_done * 1.35;
+				end
+				
+				--mitigation discs
+				if (other:FindBuff(4510)) then
+					e.hit.damage_done = e.hit.damage_done * .40;
+				end
+				if (other:FindBuff(4499)) then
+					e.hit.damage_done = e.hit.damage_done * .65;
+				end
+				if (other:FindBuff(4498)) then
+					e.hit.damage_done = e.hit.damage_done * 1.35;
+				end
+			elseif (self:GetLevel() > 21) then
+				bashdmg = Random.Real(7, 27);
+				
+				finaldmg = bashdmg - mitigationac;
+				if finaldmg < 1 then
+					finaldmg = 1;
+				end
+
+				e.hit.damage_done = finaldmg;
+
+				if (other:CastToClient():IsSitting()) then
+					maxkick = 27;
+					e.hit.damage_done = maxkick;
+				end
+
+				--damage discs
+				if (self:FindBuff(4676)) then
+					e.hit.damage_done = e.hit.damage_done * 2;
+				end
+				if (self:FindBuff(4675)) then
+					e.hit.damage_done = e.hit.damage_done * 2;
+				end
+				if (self:FindBuff(4512)) then
+					e.hit.damage_done = e.hit.damage_done * 2;
+				end
+				if (self:FindBuff(4498)) then
+					e.hit.damage_done = e.hit.damage_done * 1.35;
+				end
+				
+				--mitigation discs
+				if (other:FindBuff(4510)) then
+					e.hit.damage_done = e.hit.damage_done * .40;
+				end
+				if (other:FindBuff(4499)) then
+					e.hit.damage_done = e.hit.damage_done * .65;
+				end
+				if (other:FindBuff(4498)) then
+					e.hit.damage_done = e.hit.damage_done * 1.35;
+				end
+			end
+		end
+	
+	
+		--Solves issue where BasicBonus is negative at lower levels lowering minimum damage.
+		if BasicBonus < 0 then
+			BasicBonus = 0;
+		end
+	
+		--2h bonus calcs
+		if (wepdelay <= 27) then
+			dmg_bonus = BasicBonus + 1;
+		elseif (wepdelay <= 59) then
+			dmg_bonus = (BasicBonus * 2) + 1;
+		elseif (wepdelay >= 70) then
+			dmg_bonus = (BasicBonus * 3) + 1;
+		end
+	
+		--Monk hand to hand damage
+		if e.hit.skill == 28 and self:GetClass() == Class.MONK then
+			if self:GetLevel() <= 4 then
+				weapondamage = 4;
+			elseif self:GetLevel() > 4 and self:GetLevel() <= 9 then
+				weapondamage = 5;
+			elseif self:GetLevel() > 9 and self:GetLevel() <= 14 then
+				weapondamage = 6;
+			elseif self:GetLevel() > 14 and self:GetLevel() <= 19 then
+				weapondamage = 7;
+			elseif self:GetLevel() > 19 and self:GetLevel() <= 24 then
+				weapondamage = 8;
+			elseif self:GetLevel() > 24 and self:GetLevel() <= 29 then
+				weapondamage = 9;
+			elseif self:GetLevel() > 29 and self:GetLevel() <= 34 then
+				weapondamage = 10;
+			elseif self:GetLevel() > 34 and self:GetLevel() <= 39 then
+				weapondamage = 11;
+			elseif self:GetLevel() > 39 and self:GetLevel() <= 44 then
+				weapondamage = 12;
+			elseif self:GetLevel() > 45 and self:GetLevel() <= 49 then
+				weapondamage = 13;
+			elseif self:GetLevel() > 49 and self:GetLevel() <= 60 then
+				weapondamage = 14;
+			end
+		end
+
+		if e.hit.skill == 0 or e.hit.skill == 1 or e.hit.skill == 28 or (e.hit.skill == 36 and itemtype ~= 35) then --1her
+			minimumdamage = 1;
+			maximumdamage = ((weapondamage * offensivemod) + dmg_bonus)  - mitigationac;
+
+			local damage_roll = Random.Real(minimumdamage, maximumdamage);
+			local attack_roll = Random.Real(0, playeratkbonus);
+			local str_roll = Random.Real(0, strbonus);
+			final_damage = damage_roll + attack_roll + str_roll;
+			if (self:GetLevel() < 11) then
+				if (final_damage > 20) then
+					final_damage = 20;
+				end
+			end
+			final_damage = final_damage;
+
+			if final_damage < 1 then
+				final_damage = 1;
+			end
+			e.hit.damage_done = final_damage;
+
+			if (other:CastToClient():IsSitting()) then
+				e.hit.damage_done = maximumdamage + playeratkbonus + strbonus;
+			end
+			
+			--damage discs
+			if (self:FindBuff(4676)) then
+				e.hit.damage_done = e.hit.damage_done * 2;
+			end
+			if (self:FindBuff(4675)) then
+				e.hit.damage_done = e.hit.damage_done * 2;
+			end
+			if (self:FindBuff(4512)) then
+				e.hit.damage_done = e.hit.damage_done * 2;
+			end
+			if (self:FindBuff(4498)) then
+				e.hit.damage_done = e.hit.damage_done * 1.35;
+			end
+			
+			--mitigation discs
+			if (other:FindBuff(4510)) then
+				e.hit.damage_done = e.hit.damage_done * .40;
+			end
+			if (other:FindBuff(4499)) then
+				e.hit.damage_done = e.hit.damage_done * .65;
+			end
+			if (other:FindBuff(4498)) then
+				e.hit.damage_done = e.hit.damage_done * 1.35;
+			end
+		end
+
+
+		if e.hit.skill == 2 or e.hit.skill == 3 or (e.hit.skill == 36 and itemtype == 35) then --2her
+
+			minimumdamage = 1;
+			maximumdamage = ((weapondamage * offensivemod) + dmg_bonus)  - mitigationac; 
+			local damage_roll = Random.Real(minimumdamage, maximumdamage);
+			local attack_roll = Random.Real(0, (playeratkbonus));
+			local str_roll = Random.Real(0, (strbonus));
+			final_damage = damage_roll + attack_roll + str_roll;
+
+			if (self:GetLevel() < 11) then
+				if (final_damage > 20) then
+					final_damage = 20;
+				end
+			end
+
+			if final_damage < 1 then
+				final_damage = 1;
+			end
+			e.hit.damage_done = final_damage;
+			
+	
+			if (other:CastToClient():IsSitting()) then
+				e.hit.damage_done = maximumdamage + playeratkbonus + strbonus;
+			end
+		
+			--damage discs
+			if (self:FindBuff(4676)) then
+				e.hit.damage_done = e.hit.damage_done * 2;
+			end
+			if (self:FindBuff(4675)) then
+				e.hit.damage_done = e.hit.damage_done * 2;
+			end
+			if (self:FindBuff(4512)) then
+				e.hit.damage_done = e.hit.damage_done * 2;
+			end
+			if (self:FindBuff(4498)) then
+				e.hit.damage_done = e.hit.damage_done * 1.35;
+			end
+			
+			--mitigation discs
+			if (other:FindBuff(4510)) then
+				e.hit.damage_done = e.hit.damage_done * .40;
+			end
+			if (other:FindBuff(4499)) then
+				e.hit.damage_done = e.hit.damage_done * .65;
+			end
+			if (other:FindBuff(4498)) then
+				e.hit.damage_done = e.hit.damage_done * 1.35;
+			end
+
+		end
+	e = TryCriticalHit(e);
+	e.IgnoreDefault = true;
+	return e;
+	end
 end
