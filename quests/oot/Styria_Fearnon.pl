@@ -11,7 +11,7 @@ sub EVENT_SAY {
 	elsif ($text=~/sentry xyrin/i) {
 		quest::say("What? Why are you so concerned for Sentry Xyrin? She returned to Freeport last night right before.. Oh!! Oh, dear!! Right before the storm hit. If she did not make it back to Freeport. I fear she has drowned or is shipwrecked upon one of the nearby islands!! You must find her!");
 		#:: Spawn Ocean of Tears >> Sentry_Xyrin (69132)
-		quest::unique_spawn(69132, 0, 0, -7332, -612, 1, 90);
+		quest::unique_spawn(69132, 62, 0, -7332, -612, 1, 90);
 	}
 }
 
