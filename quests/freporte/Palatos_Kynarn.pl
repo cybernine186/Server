@@ -30,7 +30,7 @@ sub EVENT_ITEM {
 		quest::exp(100);
 	}
 	#:: Match a 13818 - Boat Beacon
-	elsif (plugin::takeItems(13818 => 4)) {
+	elsif (plugin::takeItems(13818 => 1)) {
 		quest::say("Thanks.. That saved me a lot of money. Now I can spend more time with the captain before I give this back to Lenka Stoutheart. Here is a little so...mething.");
 		#:: Ding!
 		quest::ding();
