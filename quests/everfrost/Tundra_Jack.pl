@@ -1,3 +1,8 @@
+sub EVENT_SPAWN {
+	#:: Send a signal '1' to Everfrost Peaks >> Iceberg (30062) with a 10 second delay
+	quest::signalwith(30062, 1, 10);
+}
+
 sub EVENT_SAY {
 	if ($text=~/hail/i) {
 		quest::say("Good mining to you, kid! What are you doing way out here? You're gonna catch frostbite. The name's Tundra Jack, prospector supreme. Trained by the finest miners in Kaladim!! Me 'n [Iceberg] have been out here for three years now, searchin' fer fortune.");

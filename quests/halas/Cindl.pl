@@ -9,9 +9,18 @@ sub EVENT_SAY {
 		quest::say("I have seen the warriors bringing in items called Wrath Orc Wristbands. Apparently they find them upon the lifeless bodies of the snow orc troopers. They are made from a skin I have yet to find. I will gladly reward you with either a Rawhide Tunic or Leggings or even perhaps Leather Gloves. All I ask for are Two Wrath Orc Wristbands..");
 	}
 	elsif ($text=~/mammoth hide parchment/i) {
-		quest::say("Oh, for Jinkus? Ok, here you go.");
+		quest::say("Jinkus must've sent ye fer some more mammoth hide parchment for his posters.  Here, take it, free o' charge, as a donation to the church and to the will o' the Tribunal as well.");
 		#:: Give a 12621 - Mammoth Hide Parchment
 		quest::summonitem(12621);
+	}
+	elsif ($text=~/shaman of justice/i) {
+		quest::say("The Shamans of Justice serve the will of the Tribunal. They search out those who defy the laws set by the Tribunal.");
+	}
+	elsif ($text=~/wolves of the north/i) {
+		quest::say("The Wolves of the North comprise of warriors. It is their sole purpose to defend the city and its visitors from all those that would harm it.  Becoming a warrior and thus a Wolve of the North hold the highest form of honor among the clans.");
+	}
+	elsif ($text=~/rogues of the white rose/i) {
+		quest::say("The Rogues of the White Rose are loyal to the city of Halas.  For that, they are viewed with the same respect as all other residents.");
 	}
 }
 	

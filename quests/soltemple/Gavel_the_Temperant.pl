@@ -34,8 +34,8 @@ sub EVENT_ITEM {
 		#:: Ding!
 		quest::ding();
 	}
-	#:: Match two 16507 - Enchanted Platinum Bar, a 19016 - Icon of Sacrament, and a 19015 - Ingot of Sacrament
-	elsif (plugin::takeItems(16507 => 2, 19016 => 1, 19015 => 1)) {
+	#:: Match two 16507 - Magnetized Platinum Bar, a 19016 - Icon of Sacrament, and a 19015 - Ingot of Sacrament
+	elsif (plugin::takeItems(19049 => 2, 19016 => 1, 19015 => 1)) {
 		quest::say("It is an honor to forge such a weapon. Wield it with pride!");
 		#:: Give a 6407 - Caduceus of Sacrament
 		quest::summonitem(6407);
