@@ -1,15 +1,10 @@
-sub EVENT_SPAWN {
-	#:: Create a timer 'follow' that loops every 10 seconds
-	quest::settimer("follow", 10);
-}
-
-sub EVENT_TIMER {
-	#:: Create a scalar variable to store the entity ID of Everfrost Peaks >> Tundra_Jack (30061)
-	my $tundrajack = $entity_list->GetMobByNpcTypeID(30061);
-	my $follow_target = $tundrajack->GetID();
-	#:: Match the timer 'follow'
-	if ($timer eq "follow") {
-		#:: Follow Tundra Jack at 20 units
+sub EVENT_SIGNAL {
+	#:: Match a signal '1' from /everfrost/Tundra_Jack.pl
+	if ($signal == 1) {
+		#:: Create a scalar variable to store the entity ID of Everfrost Peaks >> Tundra_Jack (30061)
+		my $tundrajack = $entity_list->GetMobByNpcTypeID(30061);
+		my $follow_target = $tundrajack->GetID();
+		#:: Follow at a range of 20 units
 		quest::follow($follow_target, 20);
 	}
 }
