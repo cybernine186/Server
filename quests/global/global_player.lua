@@ -28,7 +28,7 @@ function event_death(e)
 	local killArray = {'killed', 'slain', 'murdered', 'slaughtered', 'beat to death', 'castrated', 'mutilated', 'mauled'}
 	local strongArray = {'cutthroat', 'killer', 'murdering', 'death dealing', 'sadistic'}
 
-	local message = string.format("[%s] A %s %s of <%s> has been %s by a %s %s of <%s>.",
+	local message = string.format("[PVP] [%s] A %s %s of <%s> has been %s by a %s %s of <%s>.",
 		zone, weakArray[math.random(#weakArray)], victimClass, victimGuild, killArray[math.random(#killArray)], strongArray[math.random(#strongArray)], killerClass, killerGuild);
 	eq.world_emote(315, message);
 end
