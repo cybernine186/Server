@@ -25,7 +25,7 @@ function event_death(e)
 	local killerGuild = eq.get_guild_name_by_id(killerGuildID);
 	local zone = eq.get_zone_short_name_by_id(e.zoneid);
 	local weakArray = {'weakling', 'cowardly', 'lowly peasant', 'eunuch'}
-	local killArray = {'killed', 'slain', 'murdered', 'slaughtered', 'beat to death', 'castrated', 'mutulated', 'mauled'}
+	local killArray = {'killed', 'slain', 'murdered', 'slaughtered', 'beat to death', 'castrated', 'mutilated', 'mauled'}
 	local strongArray = {'cutthroat', 'killer', 'murdering', 'death dealing', 'sadistic'}
 
 	local message = string.format("[%s] A %s %s of <%s> has been %s by a %s %s of <%s>.",
