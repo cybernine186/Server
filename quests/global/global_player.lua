@@ -3,6 +3,10 @@ function event_death(e)
 	if(e.self:IsNPC()) then
 		return;
 	end
+	
+	if(e.other:IsNPC() and e.other:IsPet() == false) then
+		return;
+	end
 
 	local victimName = eq.get_char_name_by_id(e.self:CharacterID());
 	local victimClass = e.self:GetClassName();
