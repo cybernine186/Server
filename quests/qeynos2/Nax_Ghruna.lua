@@ -15,7 +15,7 @@ function event_say(e)
     end
 end
 
-function event_death_complete(e)
+function event_death(e)
     e.self:Say(string.format("My comrades will avenge my death."));
 end
 

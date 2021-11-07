@@ -1,4 +1,4 @@
-function event_death_complete(e)
+function event_death(e)
 	if(eq.get_rule('PVP:FactionCityKilling') == 'true') then
 		if(e.self:GetRace() == 3 and e.self:GetID() ~= e.other:GetID()) then
 			e.other:Message(13, "You have slain an Erudite within Erudin, the Citizens of Erudin will know of your deeds.");

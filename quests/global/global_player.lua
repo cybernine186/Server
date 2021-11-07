@@ -1,4 +1,4 @@
-function event_death_complete(e)
+function event_death(e)
 
 	if(e.self:IsNPC()) then
 		return;

@@ -30,6 +30,6 @@ function event_trade(e)
 	item_lib.return_items(e.self, e.other, e.trade)
 end
 
-function event_death_complete(e)
+function event_death(e)
     e.self:Say(string.format("My comrades will avenge my death."));
 end
