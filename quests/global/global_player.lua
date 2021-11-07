@@ -27,7 +27,7 @@ function event_death(e)
 	end
 	
 	local killerGuild = eq.get_guild_name_by_id(killerGuildID);
-	local zone = eq.get_zone_short_name_by_id(e.zoneid);
+	local zone = eq.get_zone_short_name_by_id(eq.get_zone_id());
 	local weakArray = {'weakling', 'cowardly', 'lowly peasant', 'eunuch'}
 	local killArray = {'killed', 'slain', 'murdered', 'slaughtered', 'beat to death', 'castrated', 'mutilated', 'mauled'}
 	local strongArray = {'cutthroat', 'killer', 'murdering', 'death dealing', 'sadistic'}
