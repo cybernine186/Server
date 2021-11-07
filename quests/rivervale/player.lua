@@ -1,4 +1,4 @@
-function event_death(e)
+function event_death_complete(e)
 	if(eq.get_rule('PVP:FactionCityKilling') == 'true') then
 		if(e.self:GetRace() == 11 and e.self:GetID() ~= e.other:GetID()) then
 			e.other:Message(13, "You have slain a Halfling within Rivervale, the Guardians of the Vale will know of your deeds.");

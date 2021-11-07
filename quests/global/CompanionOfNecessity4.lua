@@ -13,6 +13,6 @@ function event_timer(e)
 	end
 end
 
-function event_death(e)
+function event_death_complete(e)
 	e.self:CastSpell(12948 ,e.self:GetTarget():GetID()); --Companion of Necessity Effect
 end

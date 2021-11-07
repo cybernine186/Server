@@ -9,6 +9,6 @@ function event_trade(e)
     item_lib.return_items(e.self, e.other, e.trade)
 end
 
-function event_death(e)
+function event_death_complete(e)
     e.self:Say(string.format("...Long live the green..."));
 end
