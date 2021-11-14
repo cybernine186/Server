@@ -20,10 +20,15 @@ function event_death(e)
 		killerName = eq.get_char_name_by_id(e.other:GetOwner():CastToClient():CharacterID());
 		killerClass = e.other:GetOwner():CastToClient():GetClassName();
 		killerGuildID = e.other:GetOwner():CastToClient():GuildID();
-	else
+	elseif (e.other:IsClient()) then
 		killerName = eq.get_char_name_by_id(e.other:CastToClient():CharacterID());
 		killerClass = e.other:CastToClient():GetClassName();
 		killerGuildID = e.other:CastToClient():GuildID();
+	else
+		killerName = eq.get_char_name_by_id(e.killer_id);
+		killerClassID = eq.get_char_class_by_id(e.killer_id);
+		killerClass = eq.get_class_name(tonumber(killerClassID));
+		killerGuildID = eq.get_guild_id_by_char_id(e.killer_id);
 	end
 	
 	local killerGuild = eq.get_guild_name_by_id(killerGuildID);
@@ -34,5 +39,6 @@ function event_death(e)
 
 	local message = string.format("[PVP] [%s] A %s %s of <%s> has been %s by a %s %s of <%s>.",
 		zone, weakArray[math.random(#weakArray)], victimClass, victimGuild, killArray[math.random(#killArray)], strongArray[math.random(#strongArray)], killerClass, killerGuild);
+	
 	eq.world_emote(315, message);
 end
