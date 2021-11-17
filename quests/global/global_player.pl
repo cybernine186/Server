@@ -14,3 +14,12 @@ sub EVENT_SAY {
     }
 }
 
+sub EVENT_ENTERZONE {
+
+	if ($ulevel < 50 && quest::is_content_flag_enabled('n00b_test'))
+	{
+		quest::level(50);
+		quest::scribespells(50);
+		quest::traindiscs(50);
+	}
+}
