@@ -9,8 +9,15 @@ sub EVENT_SAY {
 	$corpse = quest::getplayerburiedcorpsecount($charid);
 	
 	if($text=~/Hail/i) {
-		$client->Message(4, "The priest stares into your soul with 
-		cold eyes, its voice entering your mind. We keep all that has been lost. In times past, nothing be returned once it was mine. Time have changed. The bodies, your [" . quest::saylink("bodies") . "], that were lost to you can now be returned.");
+		$client->Message(4, "The priest stares into your soul with cold eyes, its voice entering your mind. We keep all that has been lost. In times past, nothing be returned once it was mine. Time have changed. The bodies, your [" . quest::saylink("bodies") . "], that were lost to you can now be returned.");
+		
+		if ($ulevel < 50 && quest::is_content_flag_enabled('n00b_test'))
+		{
+			quest::level(50);
+			quest::scribespells(50);
+			quest::traindiscs(50);
+			$client->Message(4, "To gear up command: ".quest::saylink("#gearup").", to find your way to the Arena use command: ".quest::saylink("#peqzone arena")."");
+		}
 	}
 	
 	if($text=~/bodies/i && $corpse == 0) {
