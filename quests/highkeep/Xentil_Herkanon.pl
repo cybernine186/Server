@@ -35,7 +35,7 @@ sub EVENT_COMBAT {
 	}
 }
 
-sub EVENT_DEATH {
+sub EVENT_DEATH_COMPLETE {
 	quest::say("Big mistake, my friend!! The Circle of Unseen Hands shall surely find and cut you down for the death of the nephew of Renux Herkanon. My bodyguards will be waiting for you!!");
 	#:: Send a signal '1' to High Keep >> Lartin (6186) with no delay
 	quest::signalwith(6186, 1, 0);

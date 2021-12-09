@@ -11,7 +11,7 @@ sub EVENT_COMBAT{
  }
 }
 
-sub EVENT_DEATH {
+sub EVENT_DEATH_COMPLETE {
 my $a = $name;
 my $random_result = int(rand(100));
  if (($a =~ /Fireblight/i)&&($random_result<=50)){

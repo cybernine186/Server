@@ -297,7 +297,7 @@ sub DoTeleport {
 	quest::delete_data($key);
 }
 
-sub EVENT_DEATH {
+sub EVENT_DEATH_COMPLETE {
 	$key = "First-kill-" . $npc->GetCleanName();
 	if (!quest::get_data($key)) {
 		quest::set_data($key, $name);

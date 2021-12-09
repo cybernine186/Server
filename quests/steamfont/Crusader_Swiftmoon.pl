@@ -2,7 +2,7 @@
 #Part of Innoruuk Regent
 #Quickie to despawn him after an hour -Kilelen
 
-sub EVENT_DEATH {
+sub EVENT_DEATH_COMPLETE {
 	quest::setfaction(304, "-30"); #Soldiers of Tunare
 	quest::setfaction(178, "-30"); #King Tearis Thex
 	quest::setfaction(413, "-30"); #Faydarks Champions

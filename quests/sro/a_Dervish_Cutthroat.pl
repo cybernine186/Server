@@ -17,7 +17,7 @@ sub EVENT_COMBAT {
 	}
 }
 
-sub EVENT_DEATH {
+sub EVENT_DEATH_COMPLETE {
 	#:: Create a scalar variable to store NPC race
 	my $npcrace = $npc->GetRace();
 	#:: Match race 54 - Orc

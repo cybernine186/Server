@@ -16,7 +16,7 @@ sub EVENT_SIGNAL {
 	}
 }
 
-sub EVENT_DEATH {
+sub EVENT_DEATH_COMPLETE {
 	#:: Create a scalar variable to store a random number from 1 - 4
 	my $Random = int(rand(4)) + 1;
 	#:: Match 75 percent of the time
