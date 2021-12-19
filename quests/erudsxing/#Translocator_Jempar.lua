@@ -13,9 +13,11 @@ function event_say(e)
 		e.self:Say("Hello there. There seem to be some strange problems with the boats in this area. The Academy of Arcane Sciences has sent a small team of us to investigate them. If you need to travel to [" .. eq.say_link("Qeynos",false,"Qeynos") .. "] or [" .. eq.say_link("Erudin",false,"Erudin") .. "] in the meantime, I can transport you to my companion there.");
 	elseif(e.message:findi("qeynos")) then
 		e.self:Say("On your way");
-		eq.SelfCast(2288);
+		--eq.SelfCast(2288);
+		e.other:MovePC(1, 241, 15, 4, 384);
 	elseif(e.message:findi("erudin")) then
 		e.self:Say("On your way");
-		eq.SelfCast(2290);
+		--eq.SelfCast(2290);
+		e.other:MovePC(24, -365, 95, 24, 125);
   end
 end
