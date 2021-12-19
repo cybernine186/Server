@@ -1,1 +1,0 @@
-eq.load_encounter('rogue_1_5');

@@ -1,3 +1,0 @@
---scarlet\Elite_Sun_Revenant.lua NPC ID 175306
---Wizard Epic 1.5
---See scarlet\#Trigger_EliteSunRevenant.lua
