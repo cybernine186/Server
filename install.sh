@@ -207,3 +207,6 @@ ln -s -f $eqemu_server_directory/server_build/bin/loginserver $eqemu_server_dire
 chown eqemu:eqemu $eqemu_server_directory/ -R 
 chmod 755 $eqemu_server_directory/server/*.pl
 chmod 755 $eqemu_server_directory/server/*.sh
+
+# Turn off TCP Segmentation Offloading on NIC interface
+ethtool -K <interface> tso off
